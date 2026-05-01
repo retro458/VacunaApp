@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/blue_light">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@color/skyblue"
+        android:text="PinchaApp"
+        android:textColor="@android:color/white"
+        android:textSize="38sp"
+        android:gravity="bottom|start"
+        android:paddingStart="16dp"
+        android:paddingBottom="10dp"
+        android:textStyle="bold"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- TARJETA -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_info"
+                android:padding="20dp"
+                android:elevation="6dp">
+
+                <!-- TÍTULO -->
+                <TextView
+                    android:layout_width="342dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:text="Registro Vacunas"
+                    android:fontFamily="cursive"
+                    android:textAlignment="center"
+                    android:textSize="30sp"
+                    android:textStyle="bold" />
+
+                <!-- TEXTO -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="En PinchaApp puedes llevar el control de tus vacunas y las de toda tu familia, incluyendo tus mascotas todo eso desde tu teléfono dentro de tu PinchaApp."
+                    android:textSize="18sp"
+                    android:layout_marginBottom="12dp"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Crea Perfiles"
+                    android:textSize="25sp"
+                    android:textColor="@color/blue"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="Puedes tener un perfil para cada miembro de la familia, el esquema de vacunación adecuado para ti se determina de acuerdo a tu edad y sexo a la hora de crear el perfil."
+                    android:layout_marginBottom="10dp"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="25sp"
+                    android:text="Esquema gubernamental de vacunación"
+                    android:textColor="@color/blue"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="Listado de las vacunas recomendadas por el Ministerio de Gobierno de Salud de El Salvador para cada etapa de la vida."
+                    android:layout_marginBottom="10dp"/>
+
+                <!-- LISTA -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Además, puedes:"
+                    android:textSize="25sp"
+                    android:textColor="@color/blue"
+                    android:textStyle="bold"
+                    android:layout_marginTop="10dp"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="• Detalles de Tu Vacuna"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="• Registrar Dosis"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="• Crear Recordatorios"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="• Calculadora de IMC"/>
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="ACEPTAR"
+                    android:layout_marginTop="20dp"
+                    style="@style/LoginButtonStyle"
+                    android:textColor="@android:color/white"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

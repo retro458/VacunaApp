@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F2F2F2">
+
+    <!-- HEADER -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@color/skyblue"
+        android:text="PERFILES"
+        android:textColor="@android:color/white"
+        android:textSize="32sp"
+        android:gravity="bottom|start"
+        android:paddingStart="16dp"
+        android:paddingBottom="10dp"
+        android:textStyle="bold"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- BOTÓN PRINCIPAL -->
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="NUEVO PERFIL HUMANO"
+                android:background="@drawable/bg_titulo"
+                android:textColor="@android:color/white"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- TEXTO -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="A la hora de crear el perfil del miembro familiar se determinará el carnet de vacunación según edad y sexo registrados"
+                android:textSize="14sp"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- CARD AZUL -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_rounded"
+                android:padding="20dp">
+
+                <!-- FOTO -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Foto de perfil (opcional)"
+                    android:textColor="@android:color/black"
+                    android:layout_marginBottom="10dp"/>
+
+                <!-- INPUT NOMBRE -->
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:hint="Nombre*"
+                    android:background="@drawable/bg_input"
+                    android:padding="12dp"
+                    android:layout_marginBottom="10dp"/>
+
+                <!-- SEXO -->
+                <Spinner
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@drawable/bg_input"
+                    android:layout_marginBottom="10dp"/>
+
+                <!-- FECHA -->
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:hint="Fecha Nacimiento*"
+                    android:background="@drawable/bg_input"
+                    android:padding="12dp"/>
+
+            </LinearLayout>
+
+            <!-- BOTONES ABAJO -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="20dp"
+                android:gravity="center">
+
+                <Button
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:text="CANCELAR"
+                    style="@style/LoginButtonStyle"/>
+
+                <Space
+                    android:layout_width="10dp"
+                    android:layout_height="wrap_content"/>
+
+                <Button
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:text="CREAR PERFIL"
+                    style="@style/LoginSignInStyle"
+                    android:textColor="@android:color/white"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

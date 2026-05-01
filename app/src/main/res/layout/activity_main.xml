@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="@color/white"
+    tools:context=".MainActivity">
+
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/logo"/>
+
+    <TextView
+        android:layout_width="293dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:text="INICIAR SESION"
+        android:textAlignment="center"
+        android:fontFamily="cursive"
+        android:textColor="@color/black"
+        android:textSize="27dp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_rounded"
+        android:padding="24dp"
+        android:elevation="10dp">
+
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email"
+            android:inputType="text"
+            android:padding="14dp"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="@color/black"
+            android:textColor="@color/black"
+            android:textColorHint="@color/Gray"/>
+
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Contraseña"
+            android:inputType="textPassword"
+            android:padding="14dp"
+            android:layout_marginBottom="24dp"
+            android:backgroundTint="@color/black"
+            android:textColor="@color/black"
+            android:textColorHint="@color/Gray"/>
+
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Iniciar Sesión"
+            style="@style/LoginButtonStyle"
+            android:padding="14dp" />
+
+        <TextView
+            android:id="@+id/tvOlvido"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="¿Olvide mi contraseña?"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_gravity="center"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <Button
+            android:id="@+id/btnCrearCuenta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:text="Crear Cuenta"
+            style="@style/LoginSignInStyle"
+            android:padding="14dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="LoginButtonStyle">
+        <item name="android:backgroundTint">@color/skyblue</item>
+        <item name="android:textColor">@color/blue_dark</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="LoginSignInStyle">
+        <item name="android:backgroundTint">@color/blue_dark</item>
+        <item name="android:textColor">@color/blue_light</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+</resources>

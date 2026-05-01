@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/op_humano"
+        android:title="Agregar Humano"/>
+
+    <item
+        android:id="@+id/op_mascota"
+        android:title="Agregar Mascota"/>
+
+</menu>
