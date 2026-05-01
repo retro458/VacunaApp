@@ -6,7 +6,6 @@
     android:orientation="vertical"
     android:background="#F2F2F2">
 
-    <!-- HEADER -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="100dp"
@@ -29,7 +28,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- BOTÓN PRINCIPAL -->
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
@@ -38,7 +36,6 @@
                 android:textColor="@android:color/white"
                 android:layout_marginBottom="16dp"/>
 
-            <!-- TEXTO -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -46,7 +43,6 @@
                 android:textSize="14sp"
                 android:layout_marginBottom="16dp"/>
 
-            <!-- CARD AZUL -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -54,15 +50,13 @@
                 android:background="@drawable/bg_rounded"
                 android:padding="20dp">
 
-                <!-- FOTO -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Foto de perfil (opcional)"
+                    android:text="DATOS DEL PERFIL"
                     android:textColor="@android:color/black"
                     android:layout_marginBottom="10dp"/>
 
-                <!-- INPUT NOMBRE -->
                 <EditText
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
@@ -71,14 +65,12 @@
                     android:padding="12dp"
                     android:layout_marginBottom="10dp"/>
 
-                <!-- SEXO -->
                 <Spinner
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
                     android:background="@drawable/bg_input"
                     android:layout_marginBottom="10dp"/>
 
-                <!-- FECHA -->
                 <EditText
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
@@ -88,7 +80,6 @@
 
             </LinearLayout>
 
-            <!-- BOTONES ABAJO -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
