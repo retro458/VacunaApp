@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layoutCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+
+    android:layout_marginBottom="14dp"
+
+    android:padding="18dp"
+
+    android:background="@android:color/white"
+
+    android:elevation="3dp">
+
+    <TextView
+        android:id="@+id/tvNombre"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:text="Juan Perez"
+
+        android:textSize="20sp"
+
+        android:textStyle="bold"
+
+        android:textColor="@color/blue_dark"
+
+        android:fontFamily="sans-serif-medium"/>
+
+    <TextView
+        android:id="@+id/tvEsquema"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginTop="6dp"
+
+        android:text="Esquema Hombres"
+
+        android:textSize="14sp"
+
+        android:textColor="@color/Gray"
+
+        android:fontFamily="sans-serif"/>
+
+</LinearLayout>

@@ -63,7 +63,7 @@ public class CrearCuenta extends AppCompatActivity {
                 return;
             }
 
-            if (telefono.length() <= 8) {
+            if (telefono.length() != 8) {
                 Toast.makeText(this, "Ingresa un telefono valido", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -93,7 +93,7 @@ public class CrearCuenta extends AppCompatActivity {
 
                 runOnUiThread(() -> {
                     Toast.makeText(this, "Cuenta creada exitosamente!", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(this, MainActivity.class));
+                    startActivity(new Intent(this, infoApp.class));
                     finish();
                 });
             }).start();

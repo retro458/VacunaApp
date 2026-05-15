@@ -42,4 +42,10 @@ dependencies {
     // Room
     implementation libs.room.runtime
     annotationProcessor libs.room.compiler
+
+    //PieCharts
+    implementation 'com.github.PhilJay:MPAndroidChart:3.1.0'
+
+    //Autenticacion
+    implementation 'com.google.android.gms:play-services-auth:21.2.0'
 }

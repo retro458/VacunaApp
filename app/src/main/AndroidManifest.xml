@@ -12,6 +12,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PinchaApp">
         <activity
+            android:name=".CarnetDeVacunacionMascota"
+            android:exported="false" />
+        <activity
+            android:name=".carnet_de_vacunacion"
+            android:exported="false" />
+        <activity
+            android:name=".nuevo_perfil_mascota"
+            android:exported="false" />
+        <activity
             android:name=".NuevoPerfilHumano"
             android:exported="false" />
         <activity

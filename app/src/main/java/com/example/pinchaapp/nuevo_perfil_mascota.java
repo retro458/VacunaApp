@@ -3,7 +3,6 @@ package com.example.pinchaapp;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -11,7 +10,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -22,41 +20,37 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.pinchaapp.database.VacunAppDatabase;
 import com.example.pinchaapp.database.dao.PerfilHumanoDao;
-import com.example.pinchaapp.database.dao.UsuarioDao;
+import com.example.pinchaapp.database.dao.PerfilMascotaDao;
 import com.example.pinchaapp.database.entities.PerfilHumano;
-import com.example.pinchaapp.database.entities.Usuario;
+import com.example.pinchaapp.database.entities.PerfilMascota;
 
 import java.util.Calendar;
 
-public class NuevoPerfilHumano extends AppCompatActivity {
+public class nuevo_perfil_mascota extends AppCompatActivity {
 
-    Spinner spSexo;
+    Spinner spEspecie;
     EditText etFecha, etNombre;
-    LinearLayout layoutEmbarazo;
     Button btnCrearPerfil, btnCancelar;
-    Switch swEmbarazo;
-    private PerfilHumanoDao perfilHumanoDao;
+    private PerfilMascotaDao perfilMascotaDao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_nuevo_perfil_humano);
+        setContentView(R.layout.activity_nuevo_perfil_mascota);
 
         // DAO
-        perfilHumanoDao = VacunAppDatabase.getInstance(this).perfilHumanoDao();
+        perfilMascotaDao = VacunAppDatabase.getInstance(this).perfilMascotaDao();
 
-        spSexo = findViewById(R.id.spSexo);
+        spEspecie = findViewById(R.id.spEspecie);
         etFecha = findViewById(R.id.etFecha);
         etNombre = findViewById(R.id.etNombre);
-        layoutEmbarazo = findViewById(R.id.layoutEmbarazo);
         btnCrearPerfil = findViewById(R.id.btnCrearPerfil);
-        swEmbarazo = findViewById(R.id.swEmbarazo);
         btnCancelar = findViewById(R.id.btnCancelar);
 
         String[] opciones = {
-                "Seleccionar sexo",
-                "Femenino",
-                "Masculino"
+                "Seleccionar Especie",
+                "Perro",
+                "Gato"
         };
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -68,30 +62,7 @@ public class NuevoPerfilHumano extends AppCompatActivity {
         adapter.setDropDownViewResource(
                 R.layout.spinner_dropdown_item
         );
-
-        spSexo.setAdapter(adapter);
-
-        spSexo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
-                String sexo = parent.getItemAtPosition(position).toString();
-
-                if (sexo.equals("Femenino")) {
-                    layoutEmbarazo.setVisibility(View.VISIBLE);
-                } else {
-                    layoutEmbarazo.setVisibility(View.GONE);
-                    swEmbarazo.setChecked(false);
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
+        spEspecie.setAdapter(adapter);
 
         etFecha.setOnClickListener(v -> {
 
@@ -129,19 +100,18 @@ public class NuevoPerfilHumano extends AppCompatActivity {
 
             String nombre = etNombre.getText().toString().trim();
             String fecha = etFecha.getText().toString().trim();
-            String sexo = spSexo.getSelectedItem().toString();
-
+            String especie = spEspecie.getSelectedItem().toString();
 
             if (nombre.isEmpty()) {
-                etNombre.setError("Ingresa un nombre");
+                etNombre.setError("Ingresa uqn nombre");
                 etNombre.requestFocus();
                 return;
             }
 
-            if (sexo.equals("Seleccionar sexo")) {
+            if (especie.equals("Seleccionar Especie")) {
                 Toast.makeText(
                         this,
-                        "Selecciona un sexo",
+                        "Selecciona una Especie",
                         Toast.LENGTH_SHORT
                 ).show();
                 return;
@@ -152,51 +122,31 @@ public class NuevoPerfilHumano extends AppCompatActivity {
                 etFecha.requestFocus();
                 return;
             }
+            // Insertar perfil en Room
+            PerfilMascota nuevoPerfil = new PerfilMascota(nombre, especie, fecha);
+            perfilMascotaDao.insertarPerfil(nuevoPerfil);
 
-            final boolean embarazada =
-                    sexo.equals("Femenino")
-                            && swEmbarazo.isChecked();
+            Toast.makeText(
+                    nuevo_perfil_mascota.this,
+                    "Perfil creado correctamente",
+                    Toast.LENGTH_SHORT
+            ).show();
 
-            new Thread(() -> {
+            Intent intent = new Intent(
+                    nuevo_perfil_mascota.this,
+                    pantalla_dashboard.class
+            );
 
-                PerfilHumano nuevoPerfil =
-                        new PerfilHumano(
-                                nombre,
-                                sexo,
-                                fecha,
-                                embarazada
-                        );
+            startActivity(intent);
 
-                perfilHumanoDao.insertarPerfil(nuevoPerfil);
-
-                runOnUiThread(() -> {
-
-                    Toast.makeText(
-                            NuevoPerfilHumano.this,
-                            "Perfil creado correctamente",
-                            Toast.LENGTH_SHORT
-                    ).show();
-
-                    Intent intent = new Intent(
-                            NuevoPerfilHumano.this,
-                            pantalla_dashboard.class
-                    );
-
-                    startActivity(intent);
-
-                    finish();
-
-                });
-
-            }).start();
+            finish();
 
         });
-
         btnCancelar.setOnClickListener(v -> {
 
             startActivity(
                     new Intent(
-                            NuevoPerfilHumano.this,
+                            nuevo_perfil_mascota.this,
                             pantalla_dashboard.class
                     )
             );

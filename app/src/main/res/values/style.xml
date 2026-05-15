@@ -15,4 +15,23 @@
         <item name="android:textStyle">bold</item>
         <item name="android:textAllCaps">false</item>
     </style>
+
+    <style name="PopupMenuStyle">
+
+        <!-- Fondo transparente -->
+        <item name="android:popupBackground">
+            @android:color/transparent
+        </item>
+
+        <!-- Fondo de cada item -->
+        <item name="android:itemBackground">
+            @drawable/menu_item_background
+        </item>
+
+        <!-- Color del texto -->
+        <item name="android:textColor">
+            @color/menu_text_color
+        </item>
+
+    </style>
 </resources>

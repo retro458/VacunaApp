@@ -89,6 +89,12 @@
             style="@style/LoginSignInStyle"
             android:padding="14dp" />
 
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/btnGoogle"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="16dp"/>
+
     </LinearLayout>
 
 </LinearLayout>

@@ -3,10 +3,10 @@
 
     <item
         android:id="@+id/op_humano"
-        android:title="Agregar Humano"/>
+        android:title="Perfil Humano"/>
 
     <item
         android:id="@+id/op_mascota"
-        android:title="Agregar Mascota"/>
+        android:title="Perfil Mascota"/>
 
 </menu>
