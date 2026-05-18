@@ -1,7 +1,6 @@
 package com.example.pinchaapp;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
@@ -10,13 +9,12 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.example.pinchaapp.database.VacunAppDatabase;
 import com.example.pinchaapp.database.dao.UsuarioDao;
 import com.example.pinchaapp.database.entities.Usuario;
+import com.example.pinchaapp.dto.RegistroDto;
+
 
 public class CrearCuenta extends AppCompatActivity {
 
@@ -87,8 +85,26 @@ public class CrearCuenta extends AppCompatActivity {
                     return;
                 }
 
-                // Insertar usuario en Room
-                Usuario nuevoUsuario = new Usuario(nombre, apellido, email, telefono, password);
+                // DTO
+                RegistroDto registroDto =
+                        new RegistroDto(
+                                nombre + " " + apellido,
+                                email,
+                                password,
+                                telefono
+                        );
+
+                // ENTITY - Fix: Use 5 arguments required by Usuario constructor
+                Usuario nuevoUsuario =
+                        new Usuario(
+                                nombre,
+                                apellido,
+                                email,
+                                telefono,
+                                password
+                        );
+
+                // DAO
                 usuarioDao.insertar(nuevoUsuario);
 
                 runOnUiThread(() -> {

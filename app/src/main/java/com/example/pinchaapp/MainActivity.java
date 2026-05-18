@@ -11,6 +11,9 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.pinchaapp.database.VacunAppDatabase;
+import com.example.pinchaapp.database.dao.UsuarioDao;
+import com.example.pinchaapp.database.entities.Usuario;
 import com.example.pinchaapp.dto.AuthResponseDto;
 import com.example.pinchaapp.dto.LoginDto;
 import com.example.pinchaapp.dto.RespuestaDto;
@@ -27,12 +30,18 @@ public class MainActivity extends AppCompatActivity {
     private EditText etEmail, etPassword;
     private Button btnLogin, btnCrearCuenta;
     private TextView tvOlvido;
+    private UsuarioDao usuarioDao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
+        // DAO
+        usuarioDao = VacunAppDatabase
+                .getInstance(this)
+                .usuarioDao();
 
         // Inicializa el SessionManager
         SessionManager.init(this);
@@ -51,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
         tvOlvido = findViewById(R.id.tvOlvido);
 
         btnLogin.setOnClickListener(v -> {
+
             String email = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
 
@@ -59,18 +69,16 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            // Llama a la API
+            // =========================
+            // INTENTO API
+            // =========================
             ApiService api = ApiClient.getInstance().create(ApiService.class);
             LoginDto loginDto = new LoginDto(email, password);
 
             api.login(loginDto).enqueue(new Callback<RespuestaDto<AuthResponseDto>>() {
                 @Override
-                public void onResponse(Call<RespuestaDto<AuthResponseDto>> call,
-                                       Response<RespuestaDto<AuthResponseDto>> response) {
-                    if (response.isSuccessful() && response.body() != null
-                            && response.body().isExito()) {
-
-                        // Guardar la sesion completa
+                public void onResponse(Call<RespuestaDto<AuthResponseDto>> call, Response<RespuestaDto<AuthResponseDto>> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isExito()) {
                         AuthResponseDto data = response.body().getData();
                         SessionManager.guardarSesion(
                                 data.getToken(),
@@ -80,29 +88,18 @@ public class MainActivity extends AppCompatActivity {
                                 data.getRol()
                         );
 
-                        Toast.makeText(MainActivity.this,
-                                "¡Bienvenido " + data.getNombre() + "!",
-                                Toast.LENGTH_SHORT).show();
-
+                        Toast.makeText(MainActivity.this, "Bienvenido " + data.getNombre(), Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(MainActivity.this, pantalla_dashboard.class));
                         finish();
-
                     } else {
-                        // La API si respondio pero con error (correo/password incorrectos)
-                        String mensaje = "Correo o contraseña incorrectos";
-                        if (response.body() != null) {
-                            mensaje = response.body().getMensaje();
-                        }
-                        Toast.makeText(MainActivity.this, mensaje, Toast.LENGTH_SHORT).show();
+                        loginOffline(email, password);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<RespuestaDto<AuthResponseDto>> call, Throwable t) {
-                    // No hay conexion o la API no responde
-                    Toast.makeText(MainActivity.this,
-                            "Error de conexion, verifica tu internet",
-                            Toast.LENGTH_SHORT).show();
+                    // Si falla internet usa Room
+                    loginOffline(email, password);
                 }
             });
         });
@@ -114,5 +111,20 @@ public class MainActivity extends AppCompatActivity {
         tvOlvido.setOnClickListener(v ->
                 Toast.makeText(this, "aun me falta", Toast.LENGTH_SHORT).show()
         );
+    }
+
+    private void loginOffline(String email, String password) {
+        new Thread(() -> {
+            Usuario usuario = usuarioDao.login(email, password);
+            runOnUiThread(() -> {
+                if (usuario != null) {
+                    Toast.makeText(MainActivity.this, "Login offline exitoso", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(MainActivity.this, pantalla_dashboard.class));
+                    finish();
+                } else {
+                    Toast.makeText(MainActivity.this, "Correo o contraseña incorrectos", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }).start();
     }
 }

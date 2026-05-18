@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -12,6 +13,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.PinchaApp">
+        <activity
+            android:name=".RegistroImc"
+            android:exported="false" />
+        <activity
+            android:name=".AgendarVacuna"
+            android:exported="false" />
+        <activity
+            android:name=".AlergiasMiembro"
+            android:exported="false" />
         <activity
             android:name=".CarnetDeVacunacionMascota"
             android:exported="false" />
@@ -42,10 +52,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-
     </application>
-
-
 
 </manifest>

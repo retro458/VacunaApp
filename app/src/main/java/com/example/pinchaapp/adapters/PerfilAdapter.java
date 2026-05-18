@@ -1,6 +1,7 @@
 package com.example.pinchaapp.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.pinchaapp.R;
 import com.example.pinchaapp.database.entities.PerfilHumano;
+import com.example.pinchaapp.carnet_de_vacunacion;
+
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -69,6 +72,40 @@ public class PerfilAdapter
         holder.tvEsquema.setText(esquema);
 
         aplicarColor(holder, perfil);
+
+        // CLICK DEL PERFIL
+        holder.layoutCard.setOnClickListener(v -> {
+
+            Intent intent =
+                    new Intent(
+                            context,
+                            carnet_de_vacunacion.class
+                    );
+
+            intent.putExtra(
+                    "idPerfil",
+                    perfil.getId()
+            );
+
+            intent.putExtra(
+                    "nombre",
+                    perfil.getNombre()
+            );
+
+            intent.putExtra(
+                    "fecha",
+                    perfil.getFechaNacimiento()
+            );
+
+            intent.putExtra(
+                    "sexo",
+                    perfil.getSexo()
+            );
+            intent.putExtra("embarazada", perfil.isEmbarazada());
+
+            context.startActivity(intent);
+
+        });
     }
 
     @Override

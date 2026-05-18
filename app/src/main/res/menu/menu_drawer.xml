@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_carnet"
+        android:title="Carnet de Vacunación"
+        android:icon="@android:drawable/ic_menu_agenda"/>
+
+    <item
+        android:id="@+id/nav_alergias"
+        android:title="Alergias"
+        android:icon="@android:drawable/ic_menu_info_details"/>
+
+    <item
+        android:id="@+id/nav_escanear"
+        android:title="Escanear Carnet"
+        android:icon="@android:drawable/ic_menu_camera"/>
+
+    <item
+        android:id="@+id/nav_carnets"
+        android:title="Carnets Escaneados"
+        android:icon="@android:drawable/ic_menu_gallery"/>
+
+    <item
+        android:id="@+id/nav_centros"
+        android:title="Centros de Vacunación"
+        android:icon="@android:drawable/ic_menu_mylocation"/>
+
+    <item
+        android:id="@+id/nav_campanias"
+        android:title="Campañas"
+        android:icon="@android:drawable/ic_menu_mapmode"/>
+
+    <item
+        android:id="@+id/nav_pdf"
+        android:title="Exportar PDF"
+        android:icon="@android:drawable/ic_menu_save"/>
+
+    <item
+        android:id="@+id/nav_perfiles"
+        android:title="Perfiles"
+        android:icon="@android:drawable/ic_menu_myplaces"/>
+
+</menu>

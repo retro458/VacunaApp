@@ -34,4 +34,5 @@ public interface UsuarioDao {
     // Checa si ya existe un email registrado
     @Query("SELECT COUNT(*) FROM usuarios WHERE email = :email")
     int existeEmail(String email);
+
 }

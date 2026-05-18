@@ -1,3 +1,8 @@
 <resources>
+
     <string name="app_name">PinchaApp</string>
+
+    <string name="open">Abrir menú</string>
+    <string name="close">Cerrar menú</string>
+
 </resources>
