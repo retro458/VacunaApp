@@ -88,41 +88,32 @@ public class RegistroImc extends AppCompatActivity {
     }
 
     private void guardarIMC() {
-
-        String pesoStr = etPeso.getText().toString().trim();
+        String pesoStr   = etPeso.getText().toString().trim();
         String alturaStr = etAltura.getText().toString().trim();
 
-        double peso = Double.parseDouble(pesoStr);
-        double altura = Double.parseDouble(alturaStr);
+        if (pesoStr.isEmpty() || alturaStr.isEmpty()) return; // guard
+
+        double peso   = Double.parseDouble(pesoStr);
+        double altura = Double.parseDouble(alturaStr); // ✅ guardas en cm, como el usuario ingresó
 
         String categoria = obtenerCategoria(imcCalculado);
+        String fecha = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                .format(new Date());
 
-        String fecha = new SimpleDateFormat(
-                "dd/MM/yyyy",
-                Locale.getDefault()
-        ).format(new Date());
-
-        IMCEntity imc = new IMCEntity(
-                idPerfil,
-                peso,
-                altura,
-                imcCalculado,
-                categoria,
-                fecha
-        );
+        IMCEntity imc = new IMCEntity(idPerfil, peso, altura, imcCalculado, categoria, fecha);
 
         new Thread(() -> {
-
-            db.imcDao().insertar(imc);
-
-            runOnUiThread(() -> {
-                Toast.makeText(this,
-                        "IMC guardado",
-                        Toast.LENGTH_SHORT).show();
-
-                finish();
-            });
-
+            try {
+                db.imcDao().insertar(imc);
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "IMC guardado ✓", Toast.LENGTH_SHORT).show();
+                    finish();
+                });
+            } catch (Exception e) {
+                runOnUiThread(() ->
+                        Toast.makeText(this, "Error al guardar: " + e.getMessage(), Toast.LENGTH_LONG).show()
+                );
+            }
         }).start();
     }
 

@@ -14,6 +14,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PinchaApp">
         <activity
+            android:name=".ExportarPDF"
+            android:exported="false" />
+        <activity
+            android:name=".Campanias"
+            android:exported="false" />
+        <activity
+            android:name=".CentrosDeVacunacion"
+            android:exported="false" />
+        <activity
+            android:name=".CarnetEscaneados"
+            android:exported="false" />
+        <activity
+            android:name=".EscanearCarnet"
+            android:exported="false" />
+        <activity
             android:name=".RegistroImc"
             android:exported="false" />
         <activity

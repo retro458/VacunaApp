@@ -1,5 +1,6 @@
 package com.example.pinchaapp.database.entities;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 import androidx.room.ColumnInfo;
 
@@ -21,6 +22,9 @@ public class IMCEntity {
 
     private String fecha;
 
+    public IMCEntity() {}
+
+    @Ignore
     public IMCEntity(
             int idPerfil,
             double peso,
@@ -49,23 +53,47 @@ public class IMCEntity {
         return idPerfil;
     }
 
+    public void setIdPerfil(int idPerfil) {
+        this.idPerfil = idPerfil;
+    }
+
     public double getPeso() {
         return peso;
+    }
+
+    public void setPeso(double peso) {
+        this.peso = peso;
     }
 
     public double getAltura() {
         return altura;
     }
 
+    public void setAltura(double altura) {
+        this.altura = altura;
+    }
+
     public double getImc() {
         return imc;
+    }
+
+    public void setImc(double imc) {
+        this.imc = imc;
     }
 
     public String getCategoria() {
         return categoria;
     }
 
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
+    }
+
     public String getFecha() {
         return fecha;
+    }
+
+    public void setFecha(String fecha) {
+        this.fecha = fecha;
     }
 }

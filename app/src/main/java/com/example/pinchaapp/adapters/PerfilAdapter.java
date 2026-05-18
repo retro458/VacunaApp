@@ -92,10 +92,7 @@ public class PerfilAdapter
                     perfil.getNombre()
             );
 
-            intent.putExtra(
-                    "fecha",
-                    perfil.getFechaNacimiento()
-            );
+            intent.putExtra("fechaNacimiento", perfil.getFechaNacimiento());
 
             intent.putExtra(
                     "sexo",

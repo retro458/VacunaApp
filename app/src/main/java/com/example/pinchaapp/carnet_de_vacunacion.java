@@ -63,12 +63,16 @@ public class carnet_de_vacunacion extends AppCompatActivity {
         // =========================
         // VISTAS
         // =========================
-        drawerLayout    = findViewById(R.id.drawerLayout);
-        navigationView  = findViewById(R.id.navigationView);
-        toolbar         = findViewById(R.id.toolbar);
-        rvVacunas       = findViewById(R.id.rvVacunasComplementarias);
+        drawerLayout   = findViewById(R.id.drawerLayout);
+        navigationView = findViewById(R.id.navigationView);
+        toolbar        = findViewById(R.id.toolbar);
+        rvVacunas      = findViewById(R.id.rvVacunasComplementarias);
         TextView txtNombre = findViewById(R.id.txtNombre);
         TextView txtEdad   = findViewById(R.id.txtEdad);
+
+        View header = navigationView.getHeaderView(0);
+        txtNombreMenu = header.findViewById(R.id.txtNombreMenu);
+        txtEdadMenu   = header.findViewById(R.id.txtEdadMenu);
 
         // =========================
         // RECIBIR DATOS
@@ -76,18 +80,23 @@ public class carnet_de_vacunacion extends AppCompatActivity {
         idPerfil        = getIntent().getIntExtra("idPerfil", 0);
         nombrePerfil    = getIntent().getStringExtra("nombre");
         fechaNacimiento = getIntent().getStringExtra("fechaNacimiento");
-        if (fechaNacimiento != null) {
-            txtEdad.setText(calcularEdadCompleta(fechaNacimiento));
-        } else {
-            txtEdad.setText("Edad no disponible");
-        }
         sexo            = getIntent().getStringExtra("sexo");
 
         // =========================
         // CARD PERFIL
         // =========================
-        txtNombre.setText(nombrePerfil);
-        txtEdad.setText(calcularEdadCompleta(fechaNacimiento));
+        txtNombre.setText(nombrePerfil != null ? nombrePerfil : "Sin nombre");
+        txtEdad.setText(fechaNacimiento != null
+                ? calcularEdadCompleta(fechaNacimiento)
+                : "Edad no disponible");
+
+        // =========================
+        // HEADER MENÚ
+        // =========================
+        txtNombreMenu.setText(nombrePerfil != null ? nombrePerfil : "Sin nombre");
+        txtEdadMenu.setText(fechaNacimiento != null
+                ? calcularEdadCompleta(fechaNacimiento)
+                : "Edad no disponible");
 
         // =========================
         // COLOR TOOLBAR
@@ -95,15 +104,6 @@ public class carnet_de_vacunacion extends AppCompatActivity {
         int color = ContextCompat.getColor(this, R.color.skyblue);
         toolbar.setBackgroundColor(color);
         txtNombre.setTextColor(color);
-
-        // =========================
-        // HEADER MENU
-        // =========================
-        View header = navigationView.getHeaderView(0);
-        txtNombreMenu = header.findViewById(R.id.txtNombreMenu);
-        txtEdadMenu   = header.findViewById(R.id.txtEdadMenu);
-        txtNombreMenu.setText(nombrePerfil);
-        txtEdadMenu.setText(calcularEdadCompleta(fechaNacimiento));
 
         // =========================
         // MENU HAMBURGUESA
@@ -120,14 +120,60 @@ public class carnet_de_vacunacion extends AppCompatActivity {
         // =========================
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.nav_carnet) {
+
+            if (id == R.id.nav_alergias) {
                 Intent intent = new Intent(this, AlergiasMiembro.class);
-                intent.putExtra("idPerfil", idPerfil);
+                intent.putExtra("idPerfil",        idPerfil);
+                intent.putExtra("nombre",          nombrePerfil);
+                intent.putExtra("fechaNacimiento", fechaNacimiento);
+                intent.putExtra("sexo",            sexo);
                 startActivity(intent);
+
+            } else if (id == R.id.nav_escanear) {
+                Intent intent = new Intent(this, EscanearCarnet.class);
+                intent.putExtra("idPerfil",        idPerfil);
+                intent.putExtra("nombre",          nombrePerfil);
+                intent.putExtra("fechaNacimiento", fechaNacimiento);
+                intent.putExtra("sexo",            sexo);
+                startActivity(intent);
+
+            } else if (id == R.id.nav_carnets) {
+                Intent intent = new Intent(this, CarnetEscaneados.class);
+                intent.putExtra("idPerfil",        idPerfil);
+                intent.putExtra("nombre",          nombrePerfil);
+                intent.putExtra("fechaNacimiento", fechaNacimiento);
+                intent.putExtra("sexo",            sexo);
+                startActivity(intent);
+
+            } else if (id == R.id.nav_centros) {
+                Intent intent = new Intent(this, CentrosDeVacunacion.class);
+                intent.putExtra("idPerfil",        idPerfil);
+                intent.putExtra("nombre",          nombrePerfil);
+                intent.putExtra("fechaNacimiento", fechaNacimiento);
+                intent.putExtra("sexo",            sexo);
+                startActivity(intent);
+
+            } else if (id == R.id.nav_campanias) {
+                Intent intent = new Intent(this, Campanias.class);
+                intent.putExtra("idPerfil",        idPerfil);
+                intent.putExtra("nombre",          nombrePerfil);
+                intent.putExtra("fechaNacimiento", fechaNacimiento);
+                intent.putExtra("sexo",            sexo);
+                startActivity(intent);
+
+            } else if (id == R.id.nav_pdf) {
+                Intent intent = new Intent(this, ExportarPDF.class);
+                intent.putExtra("idPerfil",        idPerfil);
+                intent.putExtra("nombre",          nombrePerfil);
+                intent.putExtra("fechaNacimiento", fechaNacimiento);
+                intent.putExtra("sexo",            sexo);
+                startActivity(intent);
+
             } else if (id == R.id.nav_perfiles) {
                 startActivity(new Intent(this, pantalla_dashboard.class));
                 finish();
             }
+
             drawerLayout.closeDrawers();
             return true;
         });
@@ -139,7 +185,7 @@ public class carnet_de_vacunacion extends AppCompatActivity {
         rvVacunas.setNestedScrollingEnabled(false);
 
         // =========================
-        // BOTONES
+        // BASE DE DATOS Y BOTONES
         // =========================
         db = VacunAppDatabase.getInstance(this);
 
@@ -159,57 +205,6 @@ public class carnet_de_vacunacion extends AppCompatActivity {
         // CARGAR VACUNAS
         // =========================
         cargarVacunas();
-    }
-
-    // =========================
-    // CARGAR VACUNAS DEL PERFIL
-    // =========================
-    private void cargarVacunas() {
-        new Thread(() -> {
-            List<VacunaHistorial> historial =
-                    db.vacunaDao().obtenerTodasDeUnPerfil(idPerfil);
-
-            List<VacunaDto> lista = new ArrayList<>();
-            for (VacunaHistorial h : historial) {
-                boolean aplicada = h.getFechaAplicacion() != null;
-                lista.add(new VacunaDto(
-                        h.getId(),
-                        h.getNombreVacuna(),
-                        h.getDosisNumero(),
-                        h.getTotalDosis(),
-                        h.getFechaAplicacion(),
-                        h.getProximaDosis(),
-                        h.getObservaciones(),
-                        aplicada
-                ));
-            }
-
-            runOnUiThread(() -> {
-                listaVacunas.clear();
-                listaVacunas.addAll(lista);
-
-                if (adapter == null) {
-                    adapter = new VacunaAdapter(this, listaVacunas,
-                            (idHistorial, fecha) -> {
-
-                                new Thread(() -> {
-
-                                    db.vacunaDao().marcarAplicada(idHistorial, fecha);
-
-                                    runOnUiThread(() -> {
-                                        cargarVacunas();
-                                    });
-
-                                }).start();
-                            });
-                    rvVacunas.setAdapter(adapter);
-                } else {
-                    adapter.notifyDataSetChanged();
-                }
-
-                cargarGrafica();
-            });
-        }).start();
     }
 
     // =========================
@@ -274,8 +269,12 @@ public class carnet_de_vacunacion extends AppCompatActivity {
     // =========================
     private String calcularEdadCompleta(String fecha) {
         try {
-            SimpleDateFormat sdf =
-                    new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            SimpleDateFormat sdf;
+            if (fecha.contains("/")) {
+                sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            } else {
+                sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            }
             Date fechaNac = sdf.parse(fecha);
             Calendar nac = Calendar.getInstance();
             nac.setTime(fechaNac);
@@ -299,5 +298,49 @@ public class carnet_de_vacunacion extends AppCompatActivity {
             Calendar hoy = Calendar.getInstance();
             return hoy.get(Calendar.YEAR) - nac.get(Calendar.YEAR);
         } catch (Exception e) { return 0; }
+    }
+    // =========================
+    // CARGAR VACUNAS DEL PERFIL
+    // =========================
+    private void cargarVacunas() {
+        new Thread(() -> {
+            List<VacunaHistorial> historial =
+                    db.vacunaDao().obtenerTodasDeUnPerfil(idPerfil);
+
+            List<VacunaDto> lista = new ArrayList<>();
+            for (VacunaHistorial h : historial) {
+                boolean aplicada = h.getFechaAplicacion() != null;
+                lista.add(new VacunaDto(
+                        h.getId(),
+                        h.getNombreVacuna(),
+                        h.getDosisNumero(),
+                        h.getTotalDosis(),
+                        h.getFechaAplicacion(),
+                        h.getProximaDosis(),
+                        h.getObservaciones(),
+                        aplicada
+                ));
+            }
+
+            runOnUiThread(() -> {
+                listaVacunas.clear();
+                listaVacunas.addAll(lista);
+
+                if (adapter == null) {
+                    adapter = new VacunaAdapter(this, listaVacunas,
+                            (idHistorial, fecha) -> {
+                                new Thread(() -> {
+                                    db.vacunaDao().marcarAplicada(idHistorial, fecha);
+                                    runOnUiThread(this::cargarVacunas);
+                                }).start();
+                            });
+                    rvVacunas.setAdapter(adapter);
+                } else {
+                    adapter.notifyDataSetChanged();
+                }
+
+                cargarGrafica();
+            });
+        }).start();
     }
 }

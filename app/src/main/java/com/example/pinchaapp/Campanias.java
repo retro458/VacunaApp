@@ -13,29 +13,18 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.pinchaapp.adapters.VacunaAdapter;
 import com.example.pinchaapp.database.VacunAppDatabase;
-import com.example.pinchaapp.database.entities.VacunaHistorial;
-import com.example.pinchaapp.dto.VacunaDto;
-import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
-public class AlergiasMiembro extends AppCompatActivity {
-// ========================= PUEDE CAMBIAR
+public class Campanias extends AppCompatActivity {
+    // ========================= PUEDE CAMBIAR
     DrawerLayout drawerLayout;
     NavigationView navigationView;
     MaterialToolbar toolbar;
@@ -52,7 +41,7 @@ public class AlergiasMiembro extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_alergias_miembro);
+        setContentView(R.layout.activity_campanias);
 
         // =========================
         // VISTAS
@@ -114,8 +103,8 @@ public class AlergiasMiembro extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
 
-            if (id == R.id.nav_carnet) {
-                Intent intent = new Intent(this, carnet_de_vacunacion.class);
+            if (id == R.id.nav_alergias) {
+                Intent intent = new Intent(this, AlergiasMiembro.class);
                 intent.putExtra("idPerfil",        idPerfil);
                 intent.putExtra("nombre",          nombrePerfil);
                 intent.putExtra("fechaNacimiento", fechaNacimiento);
@@ -146,8 +135,8 @@ public class AlergiasMiembro extends AppCompatActivity {
                 intent.putExtra("sexo",            sexo);
                 startActivity(intent);
 
-            } else if (id == R.id.nav_campanias) {
-                Intent intent = new Intent(this, Campanias.class);
+            } else if (id == R.id.nav_carnet) {
+                Intent intent = new Intent(this, carnet_de_vacunacion.class);
                 intent.putExtra("idPerfil",        idPerfil);
                 intent.putExtra("nombre",          nombrePerfil);
                 intent.putExtra("fechaNacimiento", fechaNacimiento);
