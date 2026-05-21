@@ -23,12 +23,13 @@
     <color name="girl_primary">#fb8c00</color>
     <color name="girl_light">#fff3e0</color>
 
-    <color name="senior_primary">#6d4c41</color>
-    <color name="senior_light">#efebe9</color>
+    <color name="baby_primary">#D1884F</color>
+    <color name="baby_light">#FFF3E0</color>
 
     <color name="elder_female_primary">#c62828</color>
     <color name="elder_female_light">#fdecea</color>
 
-    <color name="pet_primary">#CBC3E3</color>
-    <color name="pet_light">#f3e5f5</color>
+    <color name="pet_light">#F3E5F5</color>
+    <color name="pet_primary">#8E44AD</color>
+    <color name="pet_dark">#5E3370</color>
 </resources>

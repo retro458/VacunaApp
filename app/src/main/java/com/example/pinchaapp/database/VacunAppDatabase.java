@@ -9,6 +9,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.example.pinchaapp.database.dao.PerfilHumanoDao;
 import com.example.pinchaapp.database.dao.PerfilMascotaDao;
+import com.example.pinchaapp.database.dao.AlergiaDao;
 import com.example.pinchaapp.database.dao.UsuarioDao;
 import com.example.pinchaapp.database.entities.PerfilHumano;
 import com.example.pinchaapp.database.entities.PerfilMascota;
@@ -18,6 +19,9 @@ import com.example.pinchaapp.database.entities.Vacuna;
 import com.example.pinchaapp.database.entities.VacunaHistorial;
 import com.example.pinchaapp.database.dao.IMCDao;
 import com.example.pinchaapp.database.entities.IMCEntity;
+import com.example.pinchaapp.database.entities.Alergia;
+
+
 
 @Database(
         entities = {
@@ -25,9 +29,10 @@ import com.example.pinchaapp.database.entities.IMCEntity;
                 PerfilHumano.class,
                 PerfilMascota.class,
                 VacunaHistorial.class,
-                IMCEntity.class
+                IMCEntity.class,
+                Alergia.class
         },
-        version = 5,
+        version = 7,
         exportSchema = false
 )
 public abstract class VacunAppDatabase extends RoomDatabase {
@@ -37,6 +42,7 @@ public abstract class VacunAppDatabase extends RoomDatabase {
     public abstract PerfilMascotaDao perfilMascotaDao();
     public abstract VacunaDao vacunaDao();
     public abstract IMCDao imcDao();
+    public abstract AlergiaDao alergiaDao();
 
     private static VacunAppDatabase instancia;
 

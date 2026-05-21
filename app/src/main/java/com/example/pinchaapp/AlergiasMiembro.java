@@ -4,10 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
@@ -18,15 +20,21 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.pinchaapp.adapters.VacunaAdapter;
+import com.example.pinchaapp.adapters.AlergiaAdapter;
+import com.example.pinchaapp.database.dao.AlergiaDao;
 import com.example.pinchaapp.database.VacunAppDatabase;
 import com.example.pinchaapp.database.entities.VacunaHistorial;
+import com.example.pinchaapp.database.entities.Alergia;
 import com.example.pinchaapp.dto.VacunaDto;
+
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
+
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -46,15 +54,35 @@ public class AlergiasMiembro extends AppCompatActivity {
     String sexo;
     int idPerfil;
     String tipoPerfil;
+    RecyclerView rvAlergias;
+    MaterialButton btnAgregar;
+
+    List<Alergia> lista = new ArrayList<>();
+
+    AlergiaAdapter adapter;
+
+    VacunAppDatabase db;
 
     TextView txtNombreMenu, txtEdadMenu;
-    VacunAppDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_alergias_miembro);
+
+        rvAlergias = findViewById(R.id.rvAlergias);
+        btnAgregar = findViewById(R.id.btnAgregarAlergia);
+
+        rvAlergias.setLayoutManager(
+                new LinearLayoutManager(this)
+        );
+
+        db = VacunAppDatabase.getInstance(this);
+
+        idPerfil = getIntent().getIntExtra("idPerfil", 0);
+
+        cargarAlergias();
 
         // =========================
         // VISTAS
@@ -192,6 +220,37 @@ public class AlergiasMiembro extends AppCompatActivity {
         // =========================
         db = VacunAppDatabase.getInstance(this);
 
+        btnAgregar.setOnClickListener(v -> {
+
+            EditText editText = new EditText(this);
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Nueva alergia")
+                    .setView(editText)
+
+                    .setPositiveButton("Guardar", (dialog, which) -> {
+
+                        String nombre =
+                                editText.getText().toString().trim();
+
+                        if (!nombre.isEmpty()) {
+
+                            new Thread(() -> {
+
+                                db.alergiaDao().insertar(
+                                        new Alergia(idPerfil, nombre)
+                                );
+
+                                runOnUiThread(this::cargarAlergias);
+
+                            }).start();
+                        }
+                    })
+
+                    .setNegativeButton("Cancelar", null)
+                    .show();
+        });
+
     }
 
     // =========================
@@ -228,6 +287,48 @@ public class AlergiasMiembro extends AppCompatActivity {
             Calendar hoy = Calendar.getInstance();
             return hoy.get(Calendar.YEAR) - nac.get(Calendar.YEAR);
         } catch (Exception e) { return 0; }
+    }
+
+    private void cargarAlergias() {
+
+        new Thread(() -> {
+
+            List<Alergia> nuevas =
+                    db.alergiaDao()
+                            .obtenerPorPerfil(idPerfil);
+
+            runOnUiThread(() -> {
+
+                lista.clear();
+                lista.addAll(nuevas);
+
+                if (adapter == null) {
+
+                    adapter = new AlergiaAdapter(
+                            this,
+                            lista,
+                            alergia -> {
+
+                                new Thread(() -> {
+
+                                    db.alergiaDao()
+                                            .eliminar(alergia);
+
+                                    runOnUiThread(this::cargarAlergias);
+
+                                }).start();
+                            }
+                    );
+
+                    rvAlergias.setAdapter(adapter);
+
+                } else {
+
+                    adapter.notifyDataSetChanged();
+                }
+            });
+
+        }).start();
     }
 
 }

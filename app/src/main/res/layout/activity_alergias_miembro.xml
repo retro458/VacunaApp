@@ -73,6 +73,31 @@
 
             </com.google.android.material.card.MaterialCardView>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAgregarAlergia"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="+ Agregar alergia"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="8dp"
+                app:cornerRadius="14dp"
+                android:backgroundTint="@color/skyblue"
+                app:layout_constraintTop_toBottomOf="@id/cardPerfil"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvAlergias"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_alergia"
+                app:layout_constraintTop_toBottomOf="@id/btnAgregarAlergia"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.core.widget.NestedScrollView>

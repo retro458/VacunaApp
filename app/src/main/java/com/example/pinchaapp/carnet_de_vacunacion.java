@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -37,6 +38,9 @@ import com.example.pinchaapp.database.entities.Vacuna;
 import com.example.pinchaapp.database.entities.VacunaHistorial;
 import com.example.pinchaapp.dto.VacunaDto;
 import com.example.pinchaapp.adapters.VacunaAdapter;
+import com.example.pinchaapp.database.entities.IMCEntity;
+import com.example.pinchaapp.adapters.ImcAdapter;
+
 
 public class carnet_de_vacunacion extends AppCompatActivity {
 
@@ -52,9 +56,14 @@ public class carnet_de_vacunacion extends AppCompatActivity {
 
     TextView txtNombreMenu, txtEdadMenu;
     RecyclerView rvVacunas;
+    RecyclerView rvIMC;
     VacunaAdapter adapter;
+    ImcAdapter imcAdapter;
     List<VacunaDto> listaVacunas = new ArrayList<>();
+    List<IMCEntity> listaIMC = new ArrayList<>();
     VacunAppDatabase db;
+
+    LinearLayout layoutIMC;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +78,10 @@ public class carnet_de_vacunacion extends AppCompatActivity {
         navigationView = findViewById(R.id.navigationView);
         toolbar        = findViewById(R.id.toolbar);
         rvVacunas      = findViewById(R.id.rvVacunasComplementarias);
+        rvIMC = findViewById(R.id.rvIMCRegistros);
+
+        rvIMC.setLayoutManager(new LinearLayoutManager(this));
+        rvIMC.setNestedScrollingEnabled(false);
         TextView txtNombre = findViewById(R.id.txtNombre);
         TextView txtEdad   = findViewById(R.id.txtEdad);
 
@@ -126,6 +139,10 @@ public class carnet_de_vacunacion extends AppCompatActivity {
             menu.findItem(R.id.nav_campanias).setVisible(false);
             // ocultar botón IMC
             findViewById(R.id.btnIMC).setVisibility(View.GONE);
+            //ocultar txtIMC
+            findViewById(R.id.txtIMC).setVisibility(View.GONE);
+            //Ocultar linearlayout IMC
+            findViewById(R.id.layoutEsquemaIMC).setVisibility(View.GONE);
         }
 
         // =========================
@@ -216,13 +233,16 @@ public class carnet_de_vacunacion extends AppCompatActivity {
         findViewById(R.id.btnIMC).setOnClickListener(v -> {
             Intent intent = new Intent(this, RegistroImc.class);
             intent.putExtra("idPerfil", idPerfil);
-            startActivity(intent);
+            startActivityForResult(intent, 200);
         });
 
+
+
         // =========================
-        // CARGAR VACUNAS
+        // CARGAR VACUNAS E IMC
         // =========================
         cargarVacunas();
+        cargarIMC();
     }
 
     // =========================
@@ -277,8 +297,13 @@ public class carnet_de_vacunacion extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == 100 && resultCode == RESULT_OK) {
-            cargarVacunas(); // recargar lista al volver
+            cargarVacunas();
+        }
+
+        if (requestCode == 200 && resultCode == RESULT_OK) {
+            cargarIMC();
         }
     }
 
@@ -359,6 +384,34 @@ public class carnet_de_vacunacion extends AppCompatActivity {
 
                 cargarGrafica();
             });
+        }).start();
+    }
+
+    private void cargarIMC() {
+
+        new Thread(() -> {
+
+            List<IMCEntity> registros =
+                    db.imcDao().obtenerPorPerfil(idPerfil);
+
+            runOnUiThread(() -> {
+
+                listaIMC.clear();
+                listaIMC.addAll(registros);
+
+                if (imcAdapter == null) {
+
+                    imcAdapter =
+                            new ImcAdapter(listaIMC);
+
+                    rvIMC.setAdapter(imcAdapter);
+
+                } else {
+
+                    imcAdapter.notifyDataSetChanged();
+                }
+            });
+
         }).start();
     }
 }

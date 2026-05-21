@@ -91,10 +91,10 @@ public class RegistroImc extends AppCompatActivity {
         String pesoStr   = etPeso.getText().toString().trim();
         String alturaStr = etAltura.getText().toString().trim();
 
-        if (pesoStr.isEmpty() || alturaStr.isEmpty()) return; // guard
+        if (pesoStr.isEmpty() || alturaStr.isEmpty()) return;
 
         double peso   = Double.parseDouble(pesoStr);
-        double altura = Double.parseDouble(alturaStr); // ✅ guardas en cm, como el usuario ingresó
+        double altura = Double.parseDouble(alturaStr);
 
         String categoria = obtenerCategoria(imcCalculado);
         String fecha = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
@@ -106,7 +106,8 @@ public class RegistroImc extends AppCompatActivity {
             try {
                 db.imcDao().insertar(imc);
                 runOnUiThread(() -> {
-                    Toast.makeText(this, "IMC guardado ✓", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "IMC guardado ", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_OK);
                     finish();
                 });
             } catch (Exception e) {

@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
             Usuario usuario = usuarioDao.login(email, password);
             runOnUiThread(() -> {
                 if (usuario != null) {
-                    Toast.makeText(MainActivity.this, "Login offline exitoso", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Login exitoso", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(MainActivity.this, pantalla_dashboard.class));
                     finish();
                 } else {

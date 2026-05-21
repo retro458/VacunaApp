@@ -135,11 +135,11 @@ public class PerfilAdapter
             holder.tvEsquema.setText(mascota.getEspecie());
 
             holder.layoutCard.setBackgroundColor(
-                    ContextCompat.getColor(context, R.color.pet_primary)
+                    ContextCompat.getColor(context, R.color.pet_light)
             );
 
             holder.tvNombre.setTextColor(
-                    ContextCompat.getColor(context, R.color.skyblue)
+                    ContextCompat.getColor(context, R.color.pet_dark)
             );
 
             holder.tvEsquema.setTextColor(
@@ -278,9 +278,17 @@ public class PerfilAdapter
         int colorNombre;
 
         if (edad <= 5) {
-            fondo = R.color.boy_light;
-            colorNombre = R.color.boy_primary;
-        } else if (perfil.getSexo().equals("Femenino")) {
+            fondo = R.color.baby_light;
+            colorNombre = R.color.baby_primary;
+        } else if (edad >= 6 && edad <= 17) {
+            if (perfil.getSexo().equals("Femenino")) {
+                fondo = R.color.girl_light;
+                colorNombre = R.color.girl_primary;
+            }else {
+                fondo = R.color.boy_light;
+                colorNombre = R.color.boy_primary;
+            }
+        }else if (perfil.getSexo().equals("Femenino")) {
             fondo = R.color.female_light;
             colorNombre = R.color.female_primary;
         } else {
