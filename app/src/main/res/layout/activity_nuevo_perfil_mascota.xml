@@ -11,6 +11,7 @@
         android:layout_height="100dp"
         android:background="@color/skyblue"
         android:text="PERFILES"
+        android:fontFamily="cursive"
         android:textColor="@android:color/white"
         android:textSize="32sp"
         android:gravity="bottom|start"

@@ -32,6 +32,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:text="NUEVO PERFIL HUMANO"
+                android:fontFamily="cursive"
                 android:background="@drawable/bg_titulo"
                 android:textColor="@android:color/white"
                 android:layout_marginBottom="16dp"/>

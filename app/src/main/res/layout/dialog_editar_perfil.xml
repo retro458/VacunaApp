@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- NOMBRE -->
+    <EditText
+        android:id="@+id/etNombre"
+        android:hint="Nombre"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <!-- FECHA NACIMIENTO -->
+    <EditText
+        android:id="@+id/etFecha"
+        android:hint="Fecha de nacimiento"
+        android:focusable="false"
+        android:clickable="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <!-- SPINNER SEXO / ESPECIE -->
+    <Spinner
+        android:id="@+id/spTipo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <!-- CHECK EMBARAZO -->
+    <CheckBox
+        android:id="@+id/cbEmbarazada"
+        android:text="Embarazada"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+</LinearLayout>

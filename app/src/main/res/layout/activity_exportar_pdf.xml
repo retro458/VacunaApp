@@ -26,6 +26,7 @@
                 android:layout_height="70dp"
                 android:background="#42C4F7"
                 app:title="EXPORTAR PDF"
+                android:fontFamily="cursive"
                 app:titleTextColor="@android:color/white"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

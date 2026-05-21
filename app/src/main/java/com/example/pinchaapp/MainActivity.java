@@ -33,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText etEmail, etPassword;
     private Button btnLogin, btnCrearCuenta;
-    private TextView tvOlvido;
     private UsuarioDao usuarioDao;
 
     @Override
@@ -61,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
         btnCrearCuenta = findViewById(R.id.btnCrearCuenta);
-        tvOlvido = findViewById(R.id.tvOlvido);
 
         btnLogin.setOnClickListener(v -> {
 
@@ -114,9 +112,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, CrearCuenta.class))
         );
 
-        tvOlvido.setOnClickListener(v ->
-                Toast.makeText(this, "aun me falta", Toast.LENGTH_SHORT).show()
-        );
     }
 
     @Override

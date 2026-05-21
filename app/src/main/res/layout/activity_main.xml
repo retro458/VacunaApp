@@ -80,18 +80,6 @@
             style="@style/LoginButtonStyle"
             android:padding="14dp" />
 
-        <TextView
-            android:id="@+id/tvOlvido"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="¿Olvide mi contraseña?"
-            android:textColor="@color/black"
-            android:textStyle="bold"
-            android:layout_marginTop="16dp"
-            android:layout_gravity="center"
-            android:clickable="true"
-            android:focusable="true" />
-
         <Button
             android:id="@+id/btnCrearCuenta"
             android:layout_width="match_parent"
