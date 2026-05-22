@@ -207,6 +207,7 @@ public class pantalla_dashboard extends AppCompatActivity {
                                 EditText etNombre = view.findViewById(R.id.etNombre);
                                 EditText etFecha = view.findViewById(R.id.etFecha);
                                 Spinner spTipo = view.findViewById(R.id.spTipo);
+                                spTipo.setEnabled(false);
                                 CheckBox cbEmbarazada = view.findViewById(R.id.cbEmbarazada);
 
                                 boolean isHumano = perfil instanceof PerfilHumano;

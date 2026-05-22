@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:background="@color/skyblue"
-        android:text="PERFILES"
+        android:text="Perfiles"
         android:textColor="@android:color/white"
         android:textSize="32sp"
         android:gravity="bottom|start"
@@ -32,7 +32,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:text="NUEVO PERFIL HUMANO"
-                android:fontFamily="cursive"
                 android:background="@drawable/bg_titulo"
                 android:textColor="@android:color/white"
                 android:layout_marginBottom="16dp"/>

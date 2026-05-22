@@ -25,7 +25,7 @@
                 android:layout_width="0dp"
                 android:layout_height="70dp"
                 android:background="#42C4F7"
-                app:title="CENTROS DE VACUNACION"
+                app:title="Centros De Vacunación"
                 android:fontFamily="cursive"
                 app:titleTextColor="@android:color/white"
                 app:layout_constraintTop_toTopOf="parent"

@@ -79,7 +79,8 @@ public class PerfilAdapter
                     obtenerEsquema(
                             calcularEdad(perfil.getFechaNacimiento()),
                             perfil.getSexo(),
-                            perfil.getTipo()
+                            perfil.getTipo(),
+                            perfil.isEmbarazada()
                     );
 
             holder.tvEsquema.setText(esquema);
@@ -231,7 +232,7 @@ public class PerfilAdapter
         }
     }
 
-    private String obtenerEsquema(int edad, String sexo, String tipo) {
+    private String obtenerEsquema(int edad, String sexo, String tipo, Boolean isEmbarazada) {
 
         if (tipo != null && tipo.equals("Mascota")) {
             return "Esquema Mascota";
@@ -249,6 +250,9 @@ public class PerfilAdapter
         }
 
         if (sexo.equals("Femenino")) {
+            if (isEmbarazada) {
+                return "Esquema Embarazada";
+            }
             return "Esquema Mujeres";
         }
 
