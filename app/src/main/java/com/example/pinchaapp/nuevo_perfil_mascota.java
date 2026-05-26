@@ -106,17 +106,13 @@ public class nuevo_perfil_mascota extends AppCompatActivity {
             String especie = spEspecie.getSelectedItem().toString();
 
             if (nombre.isEmpty()) {
-                etNombre.setError("Ingresa uqn nombre");
+                etNombre.setError("Ingresa un nombre");
                 etNombre.requestFocus();
                 return;
             }
 
             if (especie.equals("Seleccionar Especie")) {
-                Toast.makeText(
-                        this,
-                        "Selecciona una Especie",
-                        Toast.LENGTH_SHORT
-                ).show();
+                Toast.makeText(this, "Selecciona una Especie", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -125,40 +121,48 @@ public class nuevo_perfil_mascota extends AppCompatActivity {
                 etFecha.requestFocus();
                 return;
             }
-            // Insertar perfil en Room
-            PerfilMascota nuevoPerfil =
-                    new PerfilMascota(
-                            nombre,
-                            especie,
-                            fecha,
-                            "Mascota"
-                    );
 
-            new Thread(() -> {
+            // Instanciar el DTO para el Servidor
+            com.example.pinchaapp.dto.MiembroDto.CrearMiembroDto nuevoMiembro = new com.example.pinchaapp.dto.MiembroDto.CrearMiembroDto();
+            nuevoMiembro.setNombre(nombre);
+            nuevoMiembro.setTipo("mascota");
+            nuevoMiembro.setEspecie(especie);
+            nuevoMiembro.setGenero(null);
+            nuevoMiembro.setNumeroDocumento("");
+            nuevoMiembro.setFotoUrl("");
 
-                perfilMascotaDao.insertarPerfil(nuevoPerfil);
+            // Convertir la fecha de "dd/MM/yyyy" a "yyyy-MM-dd"
+            try {
+                java.text.SimpleDateFormat formatoInput = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
+                java.text.SimpleDateFormat formatoISO = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
+                java.util.Date fechaParseada = formatoInput.parse(fecha);
+                nuevoMiembro.setFechaNacimiento(formatoISO.format(fechaParseada));
+            } catch (Exception e) {
+                Toast.makeText(this, "Error en el formato de fecha", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                runOnUiThread(() -> {
+            // Inicializar ApiService y lanzar POST
+            com.example.pinchaapp.network.ApiService api = com.example.pinchaapp.network.ApiClient.getInstance().create(com.example.pinchaapp.network.ApiService.class);
+            api.crearMiembro(nuevoMiembro).enqueue(new retrofit2.Callback<com.example.pinchaapp.dto.RespuestaDto<Void>>() {
+                @Override
+                public void onResponse(retrofit2.Call<com.example.pinchaapp.dto.RespuestaDto<Void>> call, retrofit2.Response<com.example.pinchaapp.dto.RespuestaDto<Void>> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isExito()) {
+                        Toast.makeText(nuevo_perfil_mascota.this, "Perfil de mascota creado correctamente", Toast.LENGTH_SHORT).show();
 
-                    Toast.makeText(
-                            nuevo_perfil_mascota.this,
-                            "Perfil creado correctamente",
-                            Toast.LENGTH_SHORT
-                    ).show();
+                        Intent intent = new Intent(nuevo_perfil_mascota.this, pantalla_dashboard.class);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        Toast.makeText(nuevo_perfil_mascota.this, "Error de servidor al guardar mascota", Toast.LENGTH_SHORT).show();
+                    }
+                }
 
-                    Intent intent = new Intent(
-                            nuevo_perfil_mascota.this,
-                            pantalla_dashboard.class
-                    );
-
-                    startActivity(intent);
-
-                    finish();
-
-                });
-
-            }).start();
-
+                @Override
+                public void onFailure(retrofit2.Call<com.example.pinchaapp.dto.RespuestaDto<Void>> call, Throwable t) {
+                    Toast.makeText(nuevo_perfil_mascota.this, "Falla de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         });
         btnCancelar.setOnClickListener(v -> {
 

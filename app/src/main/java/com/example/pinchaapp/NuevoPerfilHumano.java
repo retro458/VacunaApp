@@ -134,7 +134,6 @@ public class NuevoPerfilHumano extends AppCompatActivity {
             String fecha = etFecha.getText().toString().trim();
             String sexo = spSexo.getSelectedItem().toString();
 
-
             if (nombre.isEmpty()) {
                 etNombre.setError("Ingresa un nombre");
                 etNombre.requestFocus();
@@ -142,11 +141,7 @@ public class NuevoPerfilHumano extends AppCompatActivity {
             }
 
             if (sexo.equals("Seleccionar sexo")) {
-                Toast.makeText(
-                        this,
-                        "Selecciona un sexo",
-                        Toast.LENGTH_SHORT
-                ).show();
+                Toast.makeText(this, "Selecciona un sexo", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -156,45 +151,48 @@ public class NuevoPerfilHumano extends AppCompatActivity {
                 return;
             }
 
-            final boolean embarazada =
-                    sexo.equals("Femenino")
-                            && swEmbarazo.isChecked();
+            // Instanciar el DTO para el Servidor
+            com.example.pinchaapp.dto.MiembroDto.CrearMiembroDto nuevoMiembro = new com.example.pinchaapp.dto.MiembroDto.CrearMiembroDto();
+            nuevoMiembro.setNombre(nombre);
+            nuevoMiembro.setTipo("persona");
+            nuevoMiembro.setGenero(sexo);
+            nuevoMiembro.setEspecie(null);
+            nuevoMiembro.setNumeroDocumento(""); // Opcional, puedes mockearlo o dejarlo vacío
+            nuevoMiembro.setFotoUrl("");
 
-            new Thread(() -> {
+            // Convertir la fecha de "dd/MM/yyyy" a "yyyy-MM-dd" para C#
+            try {
+                java.text.SimpleDateFormat formatoInput = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
+                java.text.SimpleDateFormat formatoISO = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
+                java.util.Date fechaParseada = formatoInput.parse(fecha);
+                nuevoMiembro.setFechaNacimiento(formatoISO.format(fechaParseada));
+            } catch (Exception e) {
+                Toast.makeText(this, "Error en el formato de fecha", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                PerfilHumano nuevoPerfil =
-                        new PerfilHumano(
-                                nombre,
-                                sexo,
-                                fecha,
-                                embarazada, "Humano"
-                        );
+            // Inicializar ApiService y lanzar POST
+            com.example.pinchaapp.network.ApiService api = com.example.pinchaapp.network.ApiClient.getInstance().create(com.example.pinchaapp.network.ApiService.class);
+            api.crearMiembro(nuevoMiembro).enqueue(new retrofit2.Callback<com.example.pinchaapp.dto.RespuestaDto<Void>>() {
+                @Override
+                public void onResponse(retrofit2.Call<com.example.pinchaapp.dto.RespuestaDto<Void>> call, retrofit2.Response<com.example.pinchaapp.dto.RespuestaDto<Void>> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isExito()) {
+                        Toast.makeText(NuevoPerfilHumano.this, "Perfil humano creado correctamente", Toast.LENGTH_SHORT).show();
 
-                perfilHumanoDao.insertarPerfil(nuevoPerfil);
+                        Intent intent = new Intent(NuevoPerfilHumano.this, pantalla_dashboard.class);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        Toast.makeText(NuevoPerfilHumano.this, "Error de servidor al guardar perfil", Toast.LENGTH_SHORT).show();
+                    }
+                }
 
-                runOnUiThread(() -> {
-
-                    Toast.makeText(
-                            NuevoPerfilHumano.this,
-                            "Perfil creado correctamente",
-                            Toast.LENGTH_SHORT
-                    ).show();
-
-                    Intent intent = new Intent(
-                            NuevoPerfilHumano.this,
-                            pantalla_dashboard.class
-                    );
-
-                    startActivity(intent);
-
-                    finish();
-
-                });
-
-            }).start();
-
+                @Override
+                public void onFailure(retrofit2.Call<com.example.pinchaapp.dto.RespuestaDto<Void>> call, Throwable t) {
+                    Toast.makeText(NuevoPerfilHumano.this, "Falla de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         });
-
         btnCancelar.setOnClickListener(v -> {
 
             startActivity(

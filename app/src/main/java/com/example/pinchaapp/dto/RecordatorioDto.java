@@ -1,41 +1,97 @@
 package com.example.pinchaapp.dto;
 
+import java.util.Date;
+
 public class RecordatorioDto {
 
-    private int    idRecordatorio;
-    private int    idMiembro;
-    private String nombreMiembro;
-    private int    idVacuna;
-    private String nombreVacuna;
-    private int    dosisNumero;
-    private String fechaProgramada; // "yyyy-MM-dd"
-    private String estado;          // "pendiente" | "completado" | "pospuesto"
-    private String descripcion;
+    // ============================================================
+    // REQUEST DTOs
+    // ============================================================
+    public static class ActualizarRecordatorioDto {
+        private String estado; // pendiente | completado | pospuesto
+        public ActualizarRecordatorioDto() {}
+        public String getEstado() { return estado; }
+        public void setEstado(String estado) { this.estado = estado; }
+    }
 
-    public int    getIdRecordatorio()                       { return idRecordatorio; }
-    public void   setIdRecordatorio(int idRecordatorio)     { this.idRecordatorio = idRecordatorio; }
+    public static class CrearRecordatorioCampaniaDto {
+        private int idCampania;
+        private Date fechaRecordatorio;
+        private String mensaje;
 
-    public int    getIdMiembro()                            { return idMiembro; }
-    public void   setIdMiembro(int idMiembro)               { this.idMiembro = idMiembro; }
+        public CrearRecordatorioCampaniaDto() {}
 
-    public String getNombreMiembro()                        { return nombreMiembro; }
-    public void   setNombreMiembro(String nombreMiembro)    { this.nombreMiembro = nombreMiembro; }
+        // Getters y Setters
+        public int getIdCampania() { return idCampania; }
+        public void setIdCampania(int idCampania) { this.idCampania = idCampania; }
+        public Date getFechaRecordatorio() { return fechaRecordatorio; }
+        public void setFechaRecordatorio(Date fechaRecordatorio) { this.fechaRecordatorio = fechaRecordatorio; }
+        public String getMensaje() { return mensaje; }
+        public void setMensaje(String mensaje) { this.mensaje = mensaje; }
+    }
 
-    public int    getIdVacuna()                             { return idVacuna; }
-    public void   setIdVacuna(int idVacuna)                 { this.idVacuna = idVacuna; }
+    // ============================================================
+    // RESPONSE DTOs
+    // ============================================================
+    public static class RecordatorioResponseDto {
+        private int id;
+        private int idHistorial;
+        private Date fechaRecordatorio;
+        private String tipo;
+        private String mensaje;
+        private String estado;
+        private String vacuna;
+        private String miembro;
+        private Integer diasRestantes;
 
-    public String getNombreVacuna()                         { return nombreVacuna; }
-    public void   setNombreVacuna(String nombreVacuna)      { this.nombreVacuna = nombreVacuna; }
+        public RecordatorioResponseDto() {}
 
-    public int    getDosisNumero()                          { return dosisNumero; }
-    public void   setDosisNumero(int dosisNumero)           { this.dosisNumero = dosisNumero; }
+        // Getters y Setters
+        public int getId() { return id; }
+        public void setId(int id) { this.id = id; }
+        public int getIdHistorial() { return idHistorial; }
+        public void setIdHistorial(int idHistorial) { this.idHistorial = idHistorial; }
+        public Date getFechaRecordatorio() { return fechaRecordatorio; }
+        public void setFechaRecordatorio(Date fechaRecordatorio) { this.fechaRecordatorio = fechaRecordatorio; }
+        public String getTipo() { return tipo; }
+        public void setTipo(String tipo) { this.tipo = tipo; }
+        public String getMensaje() { return mensaje; }
+        public void setMensaje(String mensaje) { this.mensaje = mensaje; }
+        public String getEstado() { return estado; }
+        public void setEstado(String estado) { this.estado = estado; }
+        public String getVacuna() { return vacuna; }
+        public void setVacuna(String vacuna) { this.vacuna = vacuna; }
+        public String getMiembro() { return miembro; }
+        public void setMiembro(String miembro) { this.miembro = miembro; }
+        public Integer getDiasRestantes() { return diasRestantes; }
+        public void setDiasRestantes(Integer diasRestantes) { this.diasRestantes = diasRestantes; }
+    }
 
-    public String getFechaProgramada()                          { return fechaProgramada; }
-    public void   setFechaProgramada(String fechaProgramada)    { this.fechaProgramada = fechaProgramada; }
+    public static class RecordatorioCampaniaResponseDto {
+        private int id;
+        private String campania;
+        private String vacuna;
+        private String lugar;
+        private Date fechaCampania;
+        private Date fechaRecordatorio;
+        private Integer diasRestantes;
 
-    public String getEstado()                   { return estado; }
-    public void   setEstado(String estado)      { this.estado = estado; }
+        public RecordatorioCampaniaResponseDto() {}
 
-    public String getDescripcion()                      { return descripcion; }
-    public void   setDescripcion(String descripcion)    { this.descripcion = descripcion; }
+        // Getters y Setters
+        public int getId() { return id; }
+        public void setId(int id) { this.id = id; }
+        public String getCampania() { return campania; }
+        public void setCampania(String campania) { this.campania = campania; }
+        public String getVacuna() { return vacuna; }
+        public void setVacuna(String vacuna) { this.vacuna = vacuna; }
+        public String getLugar() { return lugar; }
+        public void setLugar(String lugar) { this.lugar = lugar; }
+        public Date getFechaCampania() { return fechaCampania; }
+        public void setFechaCampania(Date fechaCampania) { this.fechaCampania = fechaCampania; }
+        public Date getFechaRecordatorio() { return fechaRecordatorio; }
+        public void setFechaRecordatorio(Date fechaRecordatorio) { this.fechaRecordatorio = fechaRecordatorio; }
+        public Integer getDiasRestantes() { return diasRestantes; }
+        public void setDiasRestantes(Integer diasRestantes) { this.diasRestantes = diasRestantes; }
+    }
 }

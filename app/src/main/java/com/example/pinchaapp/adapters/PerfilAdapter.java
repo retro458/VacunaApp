@@ -15,29 +15,24 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.pinchaapp.R;
-import com.example.pinchaapp.database.entities.PerfilHumano;
-import com.example.pinchaapp.database.entities.PerfilMascota;
 import com.example.pinchaapp.carnet_de_vacunacion;
-import com.example.pinchaapp.adapters.OnPerfilActionListener;
+import com.example.pinchaapp.dto.MiembroDto.MiembroResponseDto;
 
-
-
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
-public class PerfilAdapter
-        extends RecyclerView.Adapter<PerfilAdapter.ViewHolder> {
+public class PerfilAdapter extends RecyclerView.Adapter<PerfilAdapter.ViewHolder> {
 
-    Context context;
-    List<Object> lista;
-    OnPerfilActionListener listener;
+    private final Context context;
+    private final List<MiembroResponseDto> lista;
+    private final OnPerfilActionListener listener;
 
-    public PerfilAdapter(Context context,
-                         List<Object> lista,
-                         OnPerfilActionListener listener) {
+    // Actualizamos la interfaz para que use el DTO
+    public interface OnPerfilActionListener {
+        void onEditar(MiembroResponseDto perfil, int position);
+        void onEliminar(MiembroResponseDto perfil, int position);
+    }
+
+    public PerfilAdapter(Context context, List<MiembroResponseDto> lista, OnPerfilActionListener listener) {
         this.context = context;
         this.lista = lista;
         this.listener = listener;
@@ -45,142 +40,65 @@ public class PerfilAdapter
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(
-            @NonNull ViewGroup parent,
-            int viewType
-    ) {
-        View view = LayoutInflater.from(context)
-                .inflate(
-                        R.layout.item_perfil,
-                        parent,
-                        false
-                );
-
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(context).inflate(R.layout.item_perfil, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(
-            @NonNull ViewHolder holder,
-            int position
-    ) {
-        Object item = lista.get(position);
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        MiembroResponseDto miembro = lista.get(position);
+        holder.tvNombre.setText(miembro.getNombre());
 
-        // =========================
-        // PERFIL HUMANO
-        // =========================
-        if (item instanceof PerfilHumano) {
+        boolean isPersona = "persona".equalsIgnoreCase(miembro.getTipo());
 
-            PerfilHumano perfil = (PerfilHumano) item;
-
-            holder.tvNombre.setText(perfil.getNombre());
-
-            String esquema =
-                    obtenerEsquema(
-                            calcularEdad(perfil.getFechaNacimiento()),
-                            perfil.getSexo(),
-                            perfil.getTipo()
-                    );
-
+        if (isPersona) {
+            // =========================
+            // PERFIL HUMANO
+            // =========================
+            String esquema = obtenerEsquemaHumano(miembro);
             holder.tvEsquema.setText(esquema);
-
-            aplicarColor(holder, perfil);
-
-            holder.layoutCard.setOnClickListener(v -> {
-
-                Intent intent =
-                        new Intent(
-                                context,
-                                carnet_de_vacunacion.class
-                        );
-
-                intent.putExtra("idPerfil", perfil.getId());
-                intent.putExtra("nombre", perfil.getNombre());
-                intent.putExtra("fechaNacimiento", perfil.getFechaNacimiento());
-                intent.putExtra("sexo", perfil.getSexo());
-                intent.putExtra("embarazada", perfil.isEmbarazada());
-                intent.putExtra("tipoPerfil", perfil.getTipo());
-
-                context.startActivity(intent);
-            });
-
-            holder.btnOpciones.setOnClickListener(v -> {
-                PopupMenu popup = new PopupMenu(context, v);
-                popup.getMenuInflater().inflate(R.menu.menu_opciones_perfil, popup.getMenu());
-
-                popup.setOnMenuItemClickListener(menuItem -> {
-                    int id = menuItem.getItemId();
-                    if (id == R.id.op_editar) {
-                        listener.onEditar(perfil, holder.getAdapterPosition());
-                        return true;
-                    } else if (id == R.id.op_eliminar) {
-                        listener.onEliminar(perfil, holder.getAdapterPosition());
-                        return true;
-                    }
-                    return false;
-                });
-
-                popup.show();
-            });
+            aplicarColorHumano(holder, miembro);
+        } else {
+            // =========================
+            // PERFIL MASCOTA
+            // =========================
+            holder.tvEsquema.setText(miembro.getEspecie() != null ? miembro.getEspecie() : "Mascota");
+            holder.layoutCard.setBackgroundColor(ContextCompat.getColor(context, R.color.pet_light));
+            holder.tvNombre.setTextColor(ContextCompat.getColor(context, R.color.pet_dark));
+            holder.tvEsquema.setTextColor(ContextCompat.getColor(context, R.color.blue_dark));
         }
 
-        // =========================
-        // PERFIL MASCOTA
-        // =========================
-        else if (item instanceof PerfilMascota) {
+        // Navegación al carnet
+        holder.layoutCard.setOnClickListener(v -> {
+            Intent intent = new Intent(context, carnet_de_vacunacion.class);
+            intent.putExtra("idPerfil", miembro.getId());
+            intent.putExtra("nombre", miembro.getNombre());
+            intent.putExtra("fechaNacimiento", miembro.getFechaNacimiento());
+            intent.putExtra("tipoPerfil", miembro.getTipo()); // persona o mascota
+            if (isPersona) {
+                intent.putExtra("sexo", miembro.getGenero());
+            }
+            context.startActivity(intent);
+        });
 
-            PerfilMascota mascota = (PerfilMascota) item;
-
-            holder.tvNombre.setText(mascota.getNombre());
-            holder.tvEsquema.setText(mascota.getEspecie());
-
-            holder.layoutCard.setBackgroundColor(
-                    ContextCompat.getColor(context, R.color.pet_light)
-            );
-
-            holder.tvNombre.setTextColor(
-                    ContextCompat.getColor(context, R.color.pet_dark)
-            );
-
-            holder.tvEsquema.setTextColor(
-                    ContextCompat.getColor(context, R.color.blue_dark)
-            );
-
-            holder.layoutCard.setOnClickListener(v -> {
-
-                Intent intent =
-                        new Intent(
-                                context,
-                                carnet_de_vacunacion.class
-                        );
-
-                intent.putExtra("idPerfil", mascota.getId());
-                intent.putExtra("nombre", mascota.getNombre());
-                intent.putExtra("fechaNacimiento", mascota.getFechaNacimiento());
-                intent.putExtra("tipoPerfil", mascota.getTipo());
-
-                context.startActivity(intent);
+        // Opciones de Editar/Eliminar
+        holder.btnOpciones.setOnClickListener(v -> {
+            PopupMenu popup = new PopupMenu(context, v);
+            popup.getMenuInflater().inflate(R.menu.menu_opciones_perfil, popup.getMenu());
+            popup.setOnMenuItemClickListener(menuItem -> {
+                int id = menuItem.getItemId();
+                if (id == R.id.op_editar) {
+                    listener.onEditar(miembro, holder.getAdapterPosition());
+                    return true;
+                } else if (id == R.id.op_eliminar) {
+                    listener.onEliminar(miembro, holder.getAdapterPosition());
+                    return true;
+                }
+                return false;
             });
-
-            holder.btnOpciones.setOnClickListener(v -> {
-                PopupMenu popup = new PopupMenu(context, v);
-                popup.getMenuInflater().inflate(R.menu.menu_opciones_perfil, popup.getMenu());
-
-                popup.setOnMenuItemClickListener(menuItem -> {
-                    int id = menuItem.getItemId();
-                    if (id == R.id.op_editar) {
-                        listener.onEditar(mascota, holder.getAdapterPosition());
-                        return true;
-                    } else if (id == R.id.op_eliminar) {
-                        listener.onEliminar(mascota, holder.getAdapterPosition());
-                        return true;
-                    }
-                    return false;
-                });
-
-                popup.show();
-            });
-        }
+            popup.show();
+        });
     }
 
     @Override
@@ -193,16 +111,13 @@ public class PerfilAdapter
         notifyItemRemoved(position);
     }
 
-    public static class ViewHolder
-            extends RecyclerView.ViewHolder {
-
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvNombre, tvEsquema;
         LinearLayout layoutCard;
         ImageButton btnOpciones;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-
             tvNombre = itemView.findViewById(R.id.tvNombre);
             tvEsquema = itemView.findViewById(R.id.tvEsquema);
             layoutCard = itemView.findViewById(R.id.layoutCard);
@@ -210,85 +125,35 @@ public class PerfilAdapter
         }
     }
 
-    private int calcularEdad(String fecha) {
-        try {
-            SimpleDateFormat sdf =
-                    new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+    // ==========================================
+    // LÓGICA VISUAL MANTENIDA
+    // ==========================================
+    private String obtenerEsquemaHumano(MiembroResponseDto perfil) {
+        int edad = perfil.getEdad() != null ? perfil.getEdad() : 0;
+        String genero = perfil.getGenero() != null ? perfil.getGenero() : "";
 
-            Date fechaNac = sdf.parse(fecha);
-
-            Calendar nacimiento = Calendar.getInstance();
-            nacimiento.setTime(fechaNac);
-
-            Calendar hoy = Calendar.getInstance();
-
-            int edad = hoy.get(Calendar.YEAR) - nacimiento.get(Calendar.YEAR);
-
-            return edad;
-
-        } catch (Exception e) {
-            return 0;
-        }
+        if (edad <= 5) return "Esquema Infantil";
+        if (edad < 18) return genero.equalsIgnoreCase("Femenino") ? "Esquema Niñas" : "Esquema Niños";
+        return genero.equalsIgnoreCase("Femenino") ? "Esquema Mujeres" : "Esquema Hombres";
     }
 
-    private String obtenerEsquema(int edad, String sexo, String tipo) {
-
-        if (tipo != null && tipo.equals("Mascota")) {
-            return "Esquema Mascota";
-        }
-
-        if (edad <= 5) {
-            return "Esquema Infantil";
-        }
-
-        if (edad < 18) {
-            if (sexo.equals("Femenino")) {
-                return "Esquema Ninas";
-            }
-            return "Esquema Ninos";
-        }
-
-        if (sexo.equals("Femenino")) {
-            return "Esquema Mujeres";
-        }
-
-        return "Esquema Hombres";
-    }
-
-    private void aplicarColor(ViewHolder holder, PerfilHumano perfil) {
-
-        if (perfil.getTipo() != null && perfil.getTipo().equals("Mascota")) {
-
-            holder.layoutCard.setBackgroundColor(
-                    ContextCompat.getColor(context, R.color.skyblue)
-            );
-            holder.tvNombre.setTextColor(
-                    ContextCompat.getColor(context, R.color.blue_dark)
-            );
-            holder.tvEsquema.setTextColor(
-                    ContextCompat.getColor(context, R.color.blue_dark)
-            );
-
-            return;
-        }
-
-        int edad = calcularEdad(perfil.getFechaNacimiento());
-
-        int fondo;
-        int colorNombre;
+    private void aplicarColorHumano(ViewHolder holder, MiembroResponseDto perfil) {
+        int edad = perfil.getEdad() != null ? perfil.getEdad() : 0;
+        String genero = perfil.getGenero() != null ? perfil.getGenero() : "";
+        int fondo, colorNombre;
 
         if (edad <= 5) {
             fondo = R.color.baby_light;
             colorNombre = R.color.baby_primary;
-        } else if (edad >= 6 && edad <= 17) {
-            if (perfil.getSexo().equals("Femenino")) {
+        } else if (edad <= 17) {
+            if (genero.equalsIgnoreCase("Femenino")) {
                 fondo = R.color.girl_light;
                 colorNombre = R.color.girl_primary;
-            }else {
+            } else {
                 fondo = R.color.boy_light;
                 colorNombre = R.color.boy_primary;
             }
-        }else if (perfil.getSexo().equals("Femenino")) {
+        } else if (genero.equalsIgnoreCase("Femenino")) {
             fondo = R.color.female_light;
             colorNombre = R.color.female_primary;
         } else {
@@ -296,15 +161,8 @@ public class PerfilAdapter
             colorNombre = R.color.male_primary;
         }
 
-        holder.layoutCard.setBackgroundColor(
-                ContextCompat.getColor(context, fondo)
-        );
-        holder.tvNombre.setTextColor(
-                ContextCompat.getColor(context, colorNombre)
-        );
-        holder.tvEsquema.setTextColor(
-                ContextCompat.getColor(context, R.color.blue_dark)
-        );
+        holder.layoutCard.setBackgroundColor(ContextCompat.getColor(context, fondo));
+        holder.tvNombre.setTextColor(ContextCompat.getColor(context, colorNombre));
+        holder.tvEsquema.setTextColor(ContextCompat.getColor(context, R.color.blue_dark));
     }
-
 }
