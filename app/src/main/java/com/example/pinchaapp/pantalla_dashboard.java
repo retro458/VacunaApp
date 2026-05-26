@@ -3,11 +3,9 @@ package com.example.pinchaapp;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -18,33 +16,37 @@ import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.Toast;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import java.util.ArrayList;
-import com.example.pinchaapp.adapters.PerfilAdapter;
-import com.example.pinchaapp.database.VacunAppDatabase;
-import com.example.pinchaapp.database.entities.PerfilHumano;
-import com.example.pinchaapp.database.entities.PerfilMascota;
-import com.example.pinchaapp.adapters.OnPerfilActionListener;
 
+import com.example.pinchaapp.adapters.PerfilAdapter;
+import com.example.pinchaapp.dto.MiembroDto;
+import com.example.pinchaapp.dto.MiembroDto.MiembroResponseDto;
+import com.example.pinchaapp.dto.RespuestaDto;
+import com.example.pinchaapp.network.ApiClient;
+import com.example.pinchaapp.network.ApiService;
+import com.example.pinchaapp.session.SessionManager;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Calendar;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class pantalla_dashboard extends AppCompatActivity {
 
-    RecyclerView rvPerfiles;
-    Button btnCrearPerfil, btnLogout;
-    PerfilAdapter adapter;
-    VacunAppDatabase db;
+    private RecyclerView rvPerfiles;
+    private Button btnCrearPerfil;
+    private ImageButton btnLogout;
+    private PerfilAdapter adapter;
+    private ApiService api;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,122 +54,62 @@ public class pantalla_dashboard extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_pantalla_dashboard);
 
-        btnCrearPerfil = findViewById(R.id.btnCrearPerfil);
         rvPerfiles = findViewById(R.id.rvPerfiles);
-        ImageButton btnLogout = findViewById(R.id.btnLogout);
+        btnCrearPerfil = findViewById(R.id.btnCrearPerfil);
+        btnLogout = findViewById(R.id.btnLogout);
 
         rvPerfiles.setLayoutManager(new LinearLayoutManager(this));
+        api = ApiClient.getInstance().create(ApiService.class);
 
-        db = VacunAppDatabase.getInstance(this);
+        cargarPerfilesAPI();
 
-        cargarPerfiles();
+        // ==========================================
+        // MENÚ FLOTANTE PARA CREAR (INTACTO)
+        // ==========================================
+        btnCrearPerfil.setOnClickListener(view -> {
+            Context wrapper = new ContextThemeWrapper(this, R.style.PopupMenuStyle);
+            PopupMenu popup = new PopupMenu(wrapper, view);
+            popup.getMenuInflater().inflate(R.menu.menu_perfil, popup.getMenu());
 
-        btnCrearPerfil.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Context wrapper =
-                        new ContextThemeWrapper(
-                                pantalla_dashboard.this,
-                                R.style.PopupMenuStyle
-                        );
-
-                PopupMenu popup = new PopupMenu(wrapper, view);
-                popup.getMenuInflater().inflate(R.menu.menu_perfil, popup.getMenu());
-
-                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-
-                        int id = item.getItemId();
-
-                        if (id == R.id.op_humano) {
-
-                            Toast.makeText(
-                                    pantalla_dashboard.this,
-                                    "Humano seleccionado",
-                                    Toast.LENGTH_SHORT
-                            ).show();
-
-                            startActivity(
-                                    new Intent(
-                                            pantalla_dashboard.this,
-                                            NuevoPerfilHumano.class
-                                    )
-                            );
-
-                            return true;
-
-                        } else if (id == R.id.op_mascota) {
-
-                            Toast.makeText(
-                                    pantalla_dashboard.this,
-                                    "Mascota seleccionada",
-                                    Toast.LENGTH_SHORT
-                            ).show();
-
-                            startActivity(
-                                    new Intent(
-                                            pantalla_dashboard.this,
-                                            nuevo_perfil_mascota.class
-                                    )
-                            );
-
-                            return true;
-                        }
-
-                        return false;
-                    }
-                });
-
-                try {
-
-                    Field fieldPopup =
-                            PopupMenu.class.getDeclaredField("mPopup");
-
-                    fieldPopup.setAccessible(true);
-
-                    Object menuPopupHelper = fieldPopup.get(popup);
-
-                    Class<?> classPopupHelper =
-                            Class.forName(
-                                    menuPopupHelper.getClass().getName()
-                            );
-
-                    Method setForceIcons =
-                            classPopupHelper.getMethod(
-                                    "setForceShowIcon",
-                                    boolean.class
-                            );
-
-                    setForceIcons.invoke(menuPopupHelper, true);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
+            popup.setOnMenuItemClickListener(item -> {
+                if (item.getItemId() == R.id.op_humano) {
+                    startActivity(new Intent(this, NuevoPerfilHumano.class));
+                    return true;
+                } else if (item.getItemId() == R.id.op_mascota) {
+                    startActivity(new Intent(this, nuevo_perfil_mascota.class));
+                    return true;
                 }
+                return false;
+            });
 
-                popup.show();
+            // Forzar iconos (Reflexión original del equipo)
+            try {
+                Field fieldPopup = PopupMenu.class.getDeclaredField("mPopup");
+                fieldPopup.setAccessible(true);
+                Object menuPopupHelper = fieldPopup.get(popup);
+                Class<?> classPopupHelper = Class.forName(menuPopupHelper.getClass().getName());
+                Method setForceIcons = classPopupHelper.getMethod("setForceShowIcon", boolean.class);
+                setForceIcons.invoke(menuPopupHelper, true);
+            } catch (Exception ignored) {
             }
+
+            popup.show();
         });
 
+        // ==========================================
+        // LOGOUT
+        // ==========================================
         btnLogout.setOnClickListener(v -> {
-
-            new AlertDialog.Builder(pantalla_dashboard.this)
+            new AlertDialog.Builder(this)
                     .setTitle("Cerrar sesión")
                     .setMessage("¿Seguro que deseas salir?")
                     .setPositiveButton("Sí", (dialog, which) -> {
+                        SessionManager.cerrarSesion();
+                        getSharedPreferences("user", MODE_PRIVATE).edit().clear().apply();
+                        getSharedPreferences("AUTH_PREFS", MODE_PRIVATE).edit().clear().apply();
 
-                        SharedPreferences.Editor editor = getSharedPreferences("user", MODE_PRIVATE).edit();
-                        editor.clear();
-                        editor.apply();
-
-                        Intent intent = new Intent(
-                                pantalla_dashboard.this,
-                                MainActivity.class
-                        );
-
+                        Intent intent = new Intent(this, MainActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
                         startActivity(intent);
                         finish();
                     })
@@ -179,228 +121,175 @@ public class pantalla_dashboard extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        cargarPerfiles();
+        cargarPerfilesAPI(); // Refresca la lista desde el servidor al volver
     }
 
-    private void cargarPerfiles() {
+    // ==========================================
+    // LÓGICA DE RED: OBTENER PERFILES
+    // ==========================================
+    private void cargarPerfilesAPI() {
+        api.getMiembros().enqueue(new Callback<RespuestaDto<List<MiembroResponseDto>>>() {
+            @Override
+            public void onResponse(Call<RespuestaDto<List<MiembroResponseDto>>> call, Response<RespuestaDto<List<MiembroResponseDto>>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isExito()) {
+                    List<MiembroResponseDto> listaAPI = response.body().getData();
+                    configurarAdaptador(listaAPI);
+                } else {
+                    Toast.makeText(pantalla_dashboard.this, "Error al cargar perfiles", Toast.LENGTH_SHORT).show();
+                }
+            }
 
-        new Thread(() -> {
+            @Override
+            public void onFailure(Call<RespuestaDto<List<MiembroResponseDto>>> call, Throwable t) {
+                Toast.makeText(pantalla_dashboard.this, "Falla de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
-            List<Object> lista = new ArrayList<>();
+    // ==========================================
+    // CONFIGURAR ADAPTADOR Y DIÁLOGOS (USANDO DTO)
+    // ==========================================
+    private void configurarAdaptador(List<MiembroResponseDto> lista) {
+        adapter = new PerfilAdapter(this, lista, new PerfilAdapter.OnPerfilActionListener() {
 
-            lista.addAll(db.perfilHumanoDao().obtenerPerfiles());
-            lista.addAll(db.perfilMascotaDao().obtenerTodos());
+            @Override
+            public void onEditar(MiembroResponseDto perfil, int position) {
+                View view = LayoutInflater.from(pantalla_dashboard.this).inflate(R.layout.dialog_editar_perfil, null);
+                EditText etNombre = view.findViewById(R.id.etNombre);
+                EditText etFecha = view.findViewById(R.id.etFecha);
+                Spinner spTipo = view.findViewById(R.id.spTipo);
+                CheckBox cbEmbarazada = view.findViewById(R.id.cbEmbarazada);
 
-            runOnUiThread(() -> {
+                boolean isPersona = "persona".equalsIgnoreCase(perfil.getTipo());
+                etNombre.setText(perfil.getNombre());
+                etFecha.setText(perfil.getFechaNacimiento());
 
-                adapter = new PerfilAdapter(
-                        pantalla_dashboard.this,
-                        lista,
-                        new OnPerfilActionListener() {
+                if (isPersona) {
+                    String[] opciones = {"Masculino", "Femenino"};
+                    spTipo.setAdapter(new ArrayAdapter<>(pantalla_dashboard.this, android.R.layout.simple_spinner_dropdown_item, opciones));
+                    if ("Femenino".equalsIgnoreCase(perfil.getGenero())) {
+                        spTipo.setSelection(1);
+                        cbEmbarazada.setVisibility(View.VISIBLE);
+                        cbEmbarazada.setEnabled(true);
+                    } else {
+                        spTipo.setSelection(0);
+                        cbEmbarazada.setVisibility(View.GONE);
+                    }
 
-                            @Override
-                            public void onEditar(Object perfil, int position) {
-
-                                View view = LayoutInflater.from(pantalla_dashboard.this)
-                                        .inflate(R.layout.dialog_editar_perfil, null);
-
-                                EditText etNombre = view.findViewById(R.id.etNombre);
-                                EditText etFecha = view.findViewById(R.id.etFecha);
-                                Spinner spTipo = view.findViewById(R.id.spTipo);
-                                spTipo.setEnabled(false);
-                                CheckBox cbEmbarazada = view.findViewById(R.id.cbEmbarazada);
-
-                                boolean isHumano = perfil instanceof PerfilHumano;
-
-                                // ======================
-                                // SPINNER CONFIG
-                                // ======================
-                                if (isHumano) {
-
-                                    String[] opciones = {"Masculino", "Femenino"};
-                                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                                            pantalla_dashboard.this,
-                                            android.R.layout.simple_spinner_dropdown_item,
-                                            opciones
-                                    );
-                                    spTipo.setAdapter(adapter);
-
-                                    spTipo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                                        @Override
-                                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
-                                            String valor = parent.getItemAtPosition(position).toString();
-
-                                            if (valor.equals("Masculino")) {
-
-                                                cbEmbarazada.setChecked(false);
-                                                cbEmbarazada.setEnabled(false);
-                                                cbEmbarazada.setVisibility(View.GONE);
-
-                                            } else {
-
-                                                cbEmbarazada.setEnabled(true);
-                                                cbEmbarazada.setVisibility(View.VISIBLE);
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onNothingSelected(AdapterView<?> parent) {}
-                                    });
-
-                                } else {
-
-                                    String[] opciones = {"Perro", "Gato"};
-                                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                                            pantalla_dashboard.this,
-                                            android.R.layout.simple_spinner_dropdown_item,
-                                            opciones
-                                    );
-                                    spTipo.setAdapter(adapter);
-                                }
-
-                                // ======================
-                                // CARGAR DATOS
-                                // ======================
-                                if (isHumano) {
-
-                                    PerfilHumano p = (PerfilHumano) perfil;
-
-                                    etNombre.setText(p.getNombre());
-                                    etFecha.setText(p.getFechaNacimiento());
-                                    cbEmbarazada.setChecked(p.isEmbarazada());
-
-                                    if (p.getSexo().equals("Masculino")) spTipo.setSelection(0);
-                                    else spTipo.setSelection(1);
-
-                                    cbEmbarazada.setVisibility(View.VISIBLE);
-
-                                } else {
-
-                                    PerfilMascota p = (PerfilMascota) perfil;
-
-                                    etNombre.setText(p.getNombre());
-                                    etFecha.setText(p.getFechaNacimiento());
-
-                                    cbEmbarazada.setVisibility(View.GONE);
-
-                                    if (p.getEspecie().equals("Perro")) spTipo.setSelection(0);
-                                    else spTipo.setSelection(1);
-                                }
-
-                                // ======================
-                                // DATE PICKER
-                                // ======================
-                                etFecha.setOnClickListener(v -> {
-
-                                    Calendar calendar = Calendar.getInstance();
-
-                                    DatePickerDialog picker = new DatePickerDialog(
-                                            pantalla_dashboard.this,
-                                            (view1, year, month, dayOfMonth) -> {
-
-                                                String fecha = dayOfMonth + "/" + (month + 1) + "/" + year;
-                                                etFecha.setText(fecha);
-
-                                            },
-                                            calendar.get(Calendar.YEAR),
-                                            calendar.get(Calendar.MONTH),
-                                            calendar.get(Calendar.DAY_OF_MONTH)
-                                    );
-
-                                    picker.show();
-                                });
-
-                                // ======================
-                                // DIALOG
-                                // ======================
-                                AlertDialog dialog = new AlertDialog.Builder(pantalla_dashboard.this)
-                                        .setTitle("Editar perfil")
-                                        .setView(view)
-                                        .setPositiveButton("Actualizar", null)
-                                        .setNegativeButton("Cancelar", null)
-                                        .create();
-
-                                dialog.setOnShowListener(d -> {
-
-                                    Button btn = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-
-                                    btn.setOnClickListener(v -> {
-
-                                        new Thread(() -> {
-
-                                            if (isHumano) {
-
-                                                PerfilHumano p = (PerfilHumano) perfil;
-
-                                                p.setNombre(etNombre.getText().toString());
-                                                p.setFechaNacimiento(etFecha.getText().toString());
-                                                p.setSexo(spTipo.getSelectedItem().toString());
-                                                p.setEmbarazada(
-                                                        spTipo.getSelectedItem().toString().equals("Femenino")
-                                                                && cbEmbarazada.isChecked()
-                                                );
-
-                                                db.perfilHumanoDao().actualizarPerfil(p);
-
-                                            } else {
-
-                                                PerfilMascota p = (PerfilMascota) perfil;
-
-                                                p.setNombre(etNombre.getText().toString());
-                                                p.setFechaNacimiento(etFecha.getText().toString());
-                                                p.setEspecie(spTipo.getSelectedItem().toString());
-
-                                                db.perfilMascotaDao().actualizarPerfil(p);
-                                            }
-
-                                            runOnUiThread(() -> {
-                                                adapter.notifyItemChanged(position);
-                                                dialog.dismiss();
-                                            });
-
-                                        }).start();
-                                    });
-                                });
-
-                                dialog.show();
-                            }
-
-                            @Override
-                            public void onEliminar(Object perfil, int position) {
-
-                                new AlertDialog.Builder(pantalla_dashboard.this)
-                                        .setTitle("Eliminar perfil")
-                                        .setMessage("¿Seguro que deseas eliminar este perfil?")
-                                        .setPositiveButton("Eliminar", (dialog, which) -> {
-
-                                            new Thread(() -> {
-
-                                                if (perfil instanceof PerfilHumano) {
-                                                    db.perfilHumanoDao()
-                                                            .eliminarPerfil((PerfilHumano) perfil);
-                                                } else {
-                                                    db.perfilMascotaDao()
-                                                            .eliminarPerfil((PerfilMascota) perfil);
-                                                }
-
-                                                runOnUiThread(() ->
-                                                        adapter.eliminarItem(position)
-                                                );
-
-                                            }).start();
-                                        })
-                                        .setNegativeButton("Cancelar", null)
-                                        .show();
+                    spTipo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                        @Override
+                        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                            if (pos == 0) { // Masculino
+                                cbEmbarazada.setChecked(false);
+                                cbEmbarazada.setEnabled(false);
+                                cbEmbarazada.setVisibility(View.GONE);
+                            } else {
+                                cbEmbarazada.setEnabled(true);
+                                cbEmbarazada.setVisibility(View.VISIBLE);
                             }
                         }
-                );
 
-                rvPerfiles.setAdapter(adapter);
-            });
+                        @Override
+                        public void onNothingSelected(AdapterView<?> parent) {}
+                    });
+                } else {
+                    String[] opciones = {"Perro", "Gato"};
+                    spTipo.setAdapter(new ArrayAdapter<>(pantalla_dashboard.this, android.R.layout.simple_spinner_dropdown_item, opciones));
+                    cbEmbarazada.setVisibility(View.GONE);
+                    if ("Gato".equalsIgnoreCase(perfil.getEspecie())) {
+                        spTipo.setSelection(1);
+                    } else {
+                        spTipo.setSelection(0);
+                    }
+                }
 
-        }).start();
+                etFecha.setOnClickListener(v -> {
+                    Calendar calendar = Calendar.getInstance();
+                    new DatePickerDialog(pantalla_dashboard.this, (view1, year, month, dayOfMonth) -> {
+                        etFecha.setText(dayOfMonth + "/" + (month + 1) + "/" + year);
+                    }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
+                });
+
+                AlertDialog dialog = new AlertDialog.Builder(pantalla_dashboard.this)
+                        .setTitle("Editar perfil")
+                        .setView(view)
+                        .setPositiveButton("Actualizar", null)
+                        .setNegativeButton("Cancelar", null)
+                        .create();
+
+                dialog.setOnShowListener(d -> {
+                    Button btn = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                    btn.setOnClickListener(v -> {
+                        String nuevoNombre = etNombre.getText().toString().trim();
+                        String nuevaFechaStr = etFecha.getText().toString().trim();
+                        String seleccionSpinner = spTipo.getSelectedItem().toString();
+
+                        if (nuevoNombre.isEmpty() || nuevaFechaStr.isEmpty()) {
+                            Toast.makeText(pantalla_dashboard.this, "Por favor llena todos los campos", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        MiembroDto.ActualizarMiembroDto updateDto = new MiembroDto.ActualizarMiembroDto();
+                        updateDto.setNombre(nuevoNombre);
+                        updateDto.setNumeroDocumento(perfil.getNumeroDocumento());
+                        updateDto.setFotoUrl(perfil.getFotoUrl());
+
+                        try {
+                            java.text.SimpleDateFormat formatoInput = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
+                            java.text.SimpleDateFormat formatoISO = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
+
+                            java.util.Date fechaParseada = formatoInput.parse(nuevaFechaStr);
+                            String fechaFormatoAPI = formatoISO.format(fechaParseada);
+
+                            updateDto.setFechaNacimiento(fechaFormatoAPI);
+                        } catch (Exception e) {
+                            Toast.makeText(pantalla_dashboard.this, "Formato de fecha inválido", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        if (isPersona) {
+                            updateDto.setGenero(seleccionSpinner);
+                            updateDto.setEspecie(null);
+                        } else {
+                            updateDto.setEspecie(seleccionSpinner);
+                            updateDto.setGenero(null);
+                        }
+
+                        api.actualizarMiembro(perfil.getId(), updateDto).enqueue(new Callback<RespuestaDto<Void>>() {
+                            @Override
+                            public void onResponse(Call<RespuestaDto<Void>> call, Response<RespuestaDto<Void>> response) {
+                                if (response.isSuccessful() && response.body() != null && response.body().isExito()) {
+                                    Toast.makeText(pantalla_dashboard.this, "Perfil actualizado con éxito", Toast.LENGTH_SHORT).show();
+                                    dialog.dismiss();
+                                    cargarPerfilesAPI();
+                                } else {
+                                    Toast.makeText(pantalla_dashboard.this, "Error de servidor al actualizar", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<RespuestaDto<Void>> call, Throwable t) {
+                                Toast.makeText(pantalla_dashboard.this, "Error de conexión: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    });
+                });
+                dialog.show();
+            }
+
+            @Override
+            public void onEliminar(MiembroResponseDto perfil, int position) {
+                new AlertDialog.Builder(pantalla_dashboard.this)
+                        .setTitle("Eliminar perfil")
+                        .setMessage("¿Seguro que deseas eliminar este perfil?")
+                        .setPositiveButton("Eliminar", (dialog, which) -> {
+                            Toast.makeText(pantalla_dashboard.this, "Endpoint DELETE no definido en ApiService aún", Toast.LENGTH_SHORT).show();
+                            adapter.eliminarItem(position);
+                        })
+                        .setNegativeButton("Cancelar", null)
+                        .show();
+            }
+        });
+        rvPerfiles.setAdapter(adapter);
     }
-
-
 }
