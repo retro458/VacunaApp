@@ -37,7 +37,7 @@ public class MiembroDto {
 
     public static class ActualizarMiembroDto {
         private String nombre;
-        private Date fechaNacimiento;
+        private String fechaNacimiento;
         private String genero;
         private String especie;
         private String numeroDocumento;
@@ -48,8 +48,8 @@ public class MiembroDto {
         // Getters y Setters
         public String getNombre() { return nombre; }
         public void setNombre(String nombre) { this.nombre = nombre; }
-        public Date getFechaNacimiento() { return fechaNacimiento; }
-        public void setFechaNacimiento(Date fechaNacimiento) { this.fechaNacimiento = fechaNacimiento; }
+        public String getFechaNacimiento() { return fechaNacimiento; }
+        public void setFechaNacimiento(String fechaNacimiento) { this.fechaNacimiento = fechaNacimiento; }
         public String getGenero() { return genero; }
         public void setGenero(String genero) { this.genero = genero; }
         public String getEspecie() { return especie; }

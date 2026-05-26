@@ -1,6 +1,6 @@
 package com.example.pinchaapp.dto;
 
-public class AlergiaDto {
+public class AlergiasDto {
 
     // ============================================================
     // REQUEST DTOs

@@ -13,7 +13,7 @@ public class PerfilMiembroDto {
     private String raza;
     private double peso;
     private double altura;
-    private List<AlergiaDto> alergias;
+    private List<AlergiasDto> alergias;
     private List<HistorialDto> historial;
 
     public int getIdMiembro() { return idMiembro; }
@@ -43,8 +43,8 @@ public class PerfilMiembroDto {
     public double getAltura() { return altura; }
     public void setAltura(double altura) { this.altura = altura; }
 
-    public List<AlergiaDto>  getAlergias() { return alergias; }
-    public void setAlergias(List<AlergiaDto> alergias){ this.alergias = alergias; }
+    public List<AlergiasDto>  getAlergias() { return alergias; }
+    public void setAlergias(List<AlergiasDto> alergias){ this.alergias = alergias; }
 
     public List<HistorialDto> getHistorial() { return historial; }
     public void setHistorial(List<HistorialDto> historial){ this.historial = historial; }

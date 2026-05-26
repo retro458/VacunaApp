@@ -1,10 +1,8 @@
 package com.example.pinchaapp;
 
 import android.app.DatePickerDialog;
-import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -17,19 +15,18 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import com.example.pinchaapp.database.VacunAppDatabase;
-import com.example.pinchaapp.database.dao.PerfilHumanoDao;
-import com.example.pinchaapp.database.dao.UsuarioDao;
-import com.example.pinchaapp.database.entities.PerfilHumano;
-import com.example.pinchaapp.database.entities.Usuario;
+import com.example.pinchaapp.dto.MiembroDto;
+import com.example.pinchaapp.dto.RespuestaDto;
+import com.example.pinchaapp.network.ApiClient;
+import com.example.pinchaapp.network.ApiService;
 
 import java.util.Calendar;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class NuevoPerfilHumano extends AppCompatActivity {
 
@@ -38,15 +35,15 @@ public class NuevoPerfilHumano extends AppCompatActivity {
     LinearLayout layoutEmbarazo;
     Button btnCrearPerfil, btnCancelar;
     Switch swEmbarazo;
-    private PerfilHumanoDao perfilHumanoDao;
+    private ApiService api; // Reemplazamos el DAO local por el servicio de red
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nuevo_perfil_humano);
 
-        // DAO
-        perfilHumanoDao = VacunAppDatabase.getInstance(this).perfilHumanoDao();
+        // Inicializar el cliente API de Retrofit
+        api = ApiClient.getInstance().create(ApiService.class);
 
         spSexo = findViewById(R.id.spSexo);
         etFecha = findViewById(R.id.etFecha);
@@ -75,10 +72,8 @@ public class NuevoPerfilHumano extends AppCompatActivity {
         spSexo.setAdapter(adapter);
 
         spSexo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
                 String sexo = parent.getItemAtPosition(position).toString();
 
                 if (sexo.equals("Femenino")) {
@@ -90,50 +85,35 @@ public class NuevoPerfilHumano extends AppCompatActivity {
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
 
-
         etFecha.setOnClickListener(v -> {
-
             Calendar calendar = Calendar.getInstance();
-
             int year = calendar.get(Calendar.YEAR);
             int month = calendar.get(Calendar.MONTH);
             int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-            DatePickerDialog datePickerDialog =
-                    new DatePickerDialog(
-                            this,
-                            (view, selectedYear, selectedMonth, selectedDay) -> {
-
-                                String fecha =
-                                        selectedDay + "/" +
-                                                (selectedMonth + 1) + "/" +
-                                                selectedYear;
-
-                                etFecha.setText(fecha);
-
-                            },
-                            year,
-                            month,
-                            day
-                    );
+            DatePickerDialog datePickerDialog = new DatePickerDialog(
+                    this,
+                    (view, selectedYear, selectedMonth, selectedDay) -> {
+                        String fecha = selectedDay + "/" + (selectedMonth + 1) + "/" + selectedYear;
+                        etFecha.setText(fecha);
+                    },
+                    year, month, day
+            );
 
             datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
-
             datePickerDialog.show();
         });
 
-
+        // ==========================================
+        // GUARDAR MIEMBRO VÍA API (Humano)
+        // ==========================================
         btnCrearPerfil.setOnClickListener(v -> {
-
             String nombre = etNombre.getText().toString().trim();
-            String fecha = etFecha.getText().toString().trim();
+            String fechaStr = etFecha.getText().toString().trim();
             String sexo = spSexo.getSelectedItem().toString();
-
 
             if (nombre.isEmpty()) {
                 etNombre.setError("Ingresa un nombre");
@@ -142,94 +122,83 @@ public class NuevoPerfilHumano extends AppCompatActivity {
             }
 
             if (sexo.equals("Seleccionar sexo")) {
-                Toast.makeText(
-                        this,
-                        "Selecciona un sexo",
-                        Toast.LENGTH_SHORT
-                ).show();
+                Toast.makeText(this, "Selecciona un sexo", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            if (fecha.isEmpty()) {
+            if (fechaStr.isEmpty()) {
                 etFecha.setError("Selecciona una fecha");
                 etFecha.requestFocus();
                 return;
             }
 
-            final boolean embarazada =
-                    sexo.equals("Femenino")
-                            && swEmbarazo.isChecked();
+            // Usar tu DTO real y unificado
+            MiembroDto.CrearMiembroDto nuevoMiembro = new MiembroDto.CrearMiembroDto();
+            nuevoMiembro.setNombre(nombre);
+            nuevoMiembro.setTipo("persona");
+            nuevoMiembro.setGenero(sexo); // Mapeamos sexo al campo genero de la API
+            nuevoMiembro.setEspecie(null); // No aplica para humanos
+            nuevoMiembro.setFotoUrl(null);
+            nuevoMiembro.setNumeroDocumento(null); // Si el backend lo pide opcional
 
-            new Thread(() -> {
+            // Convertir fecha de dd/MM/yyyy a ISO (yyyy-MM-dd) para C#
+            try {
+                java.text.SimpleDateFormat formatoInput = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
+                java.text.SimpleDateFormat formatoISO = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
 
-                PerfilHumano nuevoPerfil =
-                        new PerfilHumano(
-                                nombre,
-                                sexo,
-                                fecha,
-                                embarazada, "Humano"
-                        );
+                java.util.Date fechaParseada = formatoInput.parse(fechaStr);
+                String fechaFormatoAPI = formatoISO.format(fechaParseada);
 
-                perfilHumanoDao.insertarPerfil(nuevoPerfil);
+                nuevoMiembro.setFechaNacimiento(fechaFormatoAPI);
+            } catch (Exception e) {
+                Toast.makeText(this, "Formato de fecha inválido", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                runOnUiThread(() -> {
+            // Bloquear botón para evitar doble envío
+            btnCrearPerfil.setEnabled(false);
 
-                    Toast.makeText(
-                            NuevoPerfilHumano.this,
-                            "Perfil creado correctamente",
-                            Toast.LENGTH_SHORT
-                    ).show();
+            // Disparar la llamada HTTP POST al C#
+            api.crearMiembro(nuevoMiembro).enqueue(new Callback<RespuestaDto<Object>>() {
+                @Override
+                public void onResponse(Call<RespuestaDto<Object>> call, Response<RespuestaDto<Object>> response) {
+                    btnCrearPerfil.setEnabled(true);
+                    if (response.isSuccessful() && response.body() != null && response.body().isExito()) {
+                        Toast.makeText(NuevoPerfilHumano.this, "Perfil creado con éxito", Toast.LENGTH_SHORT).show();
 
-                    Intent intent = new Intent(
-                            NuevoPerfilHumano.this,
-                            pantalla_dashboard.class
-                    );
+                        // Cerramos el formulario de forma limpia; onResume() en el Dashboard hará el resto.
+                        finish();
+                    } else {
+                        Toast.makeText(NuevoPerfilHumano.this, "Error del servidor al crear perfil", Toast.LENGTH_SHORT).show();
+                    }
+                }
 
-                    startActivity(intent);
-
-                    finish();
-
-                });
-
-            }).start();
-
+                @Override
+                public void onFailure(Call<RespuestaDto<Object>> call, Throwable t) {
+                    btnCrearPerfil.setEnabled(true);
+                    Toast.makeText(NuevoPerfilHumano.this, "Fallo de conexión: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
-        btnCancelar.setOnClickListener(v -> {
-
-            startActivity(
-                    new Intent(
-                            NuevoPerfilHumano.this,
-                            pantalla_dashboard.class
-                    )
-            );
-
-            finish();
-
-        });
+        // Cancelar cierra el formulario sin hacer nada
+        btnCancelar.setOnClickListener(v -> finish());
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-
         View view = getCurrentFocus();
-
         if (view instanceof EditText) {
-
             Rect outRect = new Rect();
             view.getGlobalVisibleRect(outRect);
-
             if (!outRect.contains((int) ev.getRawX(), (int) ev.getRawY())) {
-
                 view.clearFocus();
-
-                InputMethodManager imm =
-                        (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-
-                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                }
             }
         }
-
         return super.dispatchTouchEvent(ev);
     }
 }
