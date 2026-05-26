@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardCampania"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="14dp"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_menu_my_calendar"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="12dp">
+
+            <TextView
+                android:id="@+id/txtNombreCampania"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Campaña"
+                android:textStyle="bold"
+                android:textColor="@color/blue_dark"
+                android:textSize="15sp"/>
+
+            <TextView
+                android:id="@+id/txtVacunaCampania"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Vacuna"
+                android:textColor="@color/Gray"
+                android:textSize="12sp"
+                android:layout_marginTop="2dp"/>
+
+            <TextView
+                android:id="@+id/txtCentroCampania"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Centro"
+                android:textColor="@color/skyblue"
+                android:textSize="12sp"
+                android:layout_marginTop="2dp"/>
+
+            <TextView
+                android:id="@+id/txtFechasCampania"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fechas"
+                android:textColor="@color/Gray"
+                android:textSize="11sp"
+                android:layout_marginTop="2dp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

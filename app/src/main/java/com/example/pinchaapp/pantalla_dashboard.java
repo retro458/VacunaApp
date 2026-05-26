@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -191,8 +190,7 @@ public class pantalla_dashboard extends AppCompatActivity {
                         }
 
                         @Override
-                        public void onNothingSelected(AdapterView<?> parent) {
-                        }
+                        public void onNothingSelected(AdapterView<?> parent) {}
                     });
                 } else {
                     String[] opciones = {"Perro", "Gato"};
@@ -231,13 +229,11 @@ public class pantalla_dashboard extends AppCompatActivity {
                             return;
                         }
 
-                        // Mapear datos al DTO de actualización
                         MiembroDto.ActualizarMiembroDto updateDto = new MiembroDto.ActualizarMiembroDto();
                         updateDto.setNombre(nuevoNombre);
                         updateDto.setNumeroDocumento(perfil.getNumeroDocumento());
                         updateDto.setFotoUrl(perfil.getFotoUrl());
 
-                        // Parsear String a Date para tu API de C#
                         try {
                             java.text.SimpleDateFormat formatoInput = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
                             java.text.SimpleDateFormat formatoISO = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
@@ -245,7 +241,7 @@ public class pantalla_dashboard extends AppCompatActivity {
                             java.util.Date fechaParseada = formatoInput.parse(nuevaFechaStr);
                             String fechaFormatoAPI = formatoISO.format(fechaParseada);
 
-                            updateDto.setFechaNacimiento(fechaFormatoAPI); // Enviará algo como "2026-05-25"
+                            updateDto.setFechaNacimiento(fechaFormatoAPI);
                         } catch (Exception e) {
                             Toast.makeText(pantalla_dashboard.this, "Formato de fecha inválido", Toast.LENGTH_SHORT).show();
                             return;
@@ -259,14 +255,13 @@ public class pantalla_dashboard extends AppCompatActivity {
                             updateDto.setGenero(null);
                         }
 
-                        // Ejecutar la petición PUT
                         api.actualizarMiembro(perfil.getId(), updateDto).enqueue(new Callback<RespuestaDto<Void>>() {
                             @Override
                             public void onResponse(Call<RespuestaDto<Void>> call, Response<RespuestaDto<Void>> response) {
                                 if (response.isSuccessful() && response.body() != null && response.body().isExito()) {
                                     Toast.makeText(pantalla_dashboard.this, "Perfil actualizado con éxito", Toast.LENGTH_SHORT).show();
                                     dialog.dismiss();
-                                    cargarPerfilesAPI(); // Refrescar recycler sin Room
+                                    cargarPerfilesAPI();
                                 } else {
                                     Toast.makeText(pantalla_dashboard.this, "Error de servidor al actualizar", Toast.LENGTH_SHORT).show();
                                 }
@@ -288,7 +283,6 @@ public class pantalla_dashboard extends AppCompatActivity {
                         .setTitle("Eliminar perfil")
                         .setMessage("¿Seguro que deseas eliminar este perfil?")
                         .setPositiveButton("Eliminar", (dialog, which) -> {
-                            // TODO: Conectar a tu API cuando agregues el @DELETE
                             Toast.makeText(pantalla_dashboard.this, "Endpoint DELETE no definido en ApiService aún", Toast.LENGTH_SHORT).show();
                             adapter.eliminarItem(position);
                         })

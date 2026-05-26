@@ -25,8 +25,7 @@
                 android:layout_width="0dp"
                 android:layout_height="70dp"
                 android:background="#42C4F7"
-                app:title="CAMPAÑAS"
-                android:fontFamily="cursive"
+                app:title="Campañas"
                 app:titleTextColor="@android:color/white"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -72,6 +71,72 @@
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
+
+            <!-- TÍTULO SECCIÓN -->
+            <TextView
+                android:id="@+id/txtTituloCampanias"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="4dp"
+                android:text="Campañas activas"
+                android:textColor="@color/blue_dark"
+                android:textStyle="bold"
+                android:textSize="15sp"
+                app:layout_constraintTop_toBottomOf="@id/cardPerfil"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <!-- LISTA DE CAMPAÑAS -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerCampanias"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:paddingHorizontal="16dp"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                app:layout_constraintTop_toBottomOf="@id/txtTituloCampanias"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <!-- BLOQUE DE ESTADO (cargando / vacío / error) -->
+            <LinearLayout
+                android:id="@+id/layoutEstadoCampanias"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="32dp"
+                android:layout_marginTop="40dp"
+                app:layout_constraintTop_toBottomOf="@id/txtTituloCampanias"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <ProgressBar
+                    android:id="@+id/progressCampanias"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"/>
+
+                <ImageView
+                    android:id="@+id/iconoEstadoCampanias"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@android:drawable/ic_menu_my_calendar"
+                    android:alpha="0.35"
+                    android:visibility="gone"/>
+
+                <TextView
+                    android:id="@+id/txtEstadoCampanias"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Cargando campañas..."
+                    android:textColor="#B0B0B0"
+                    android:textSize="14sp"
+                    android:gravity="center"/>
+
+            </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

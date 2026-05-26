@@ -26,7 +26,6 @@ public class PerfilAdapter extends RecyclerView.Adapter<PerfilAdapter.ViewHolder
     private final List<MiembroResponseDto> lista;
     private final OnPerfilActionListener listener;
 
-    // Actualizamos la interfaz para que use el DTO
     public interface OnPerfilActionListener {
         void onEditar(MiembroResponseDto perfil, int position);
         void onEliminar(MiembroResponseDto perfil, int position);
@@ -75,7 +74,7 @@ public class PerfilAdapter extends RecyclerView.Adapter<PerfilAdapter.ViewHolder
             intent.putExtra("idPerfil", miembro.getId());
             intent.putExtra("nombre", miembro.getNombre());
             intent.putExtra("fechaNacimiento", miembro.getFechaNacimiento());
-            intent.putExtra("tipoPerfil", miembro.getTipo()); // persona o mascota
+            intent.putExtra("tipoPerfil", miembro.getTipo());
             if (isPersona) {
                 intent.putExtra("sexo", miembro.getGenero());
             }
@@ -126,7 +125,7 @@ public class PerfilAdapter extends RecyclerView.Adapter<PerfilAdapter.ViewHolder
     }
 
     // ==========================================
-    // LÓGICA VISUAL MANTENIDA
+    // LÓGICA VISUAL BASADA EN DTO
     // ==========================================
     private String obtenerEsquemaHumano(MiembroResponseDto perfil) {
         int edad = perfil.getEdad() != null ? perfil.getEdad() : 0;
