@@ -45,7 +45,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class AlergiasMiembro extends AppCompatActivity {
+public class AlergiasMiembro extends BasePerfilActivity {
 
     private Spinner spinnerAlergias;
     private MaterialButton btnAgregarAlergia;
@@ -58,37 +58,30 @@ public class AlergiasMiembro extends AppCompatActivity {
     private List<AlergiasDto.AlergiaDto> listaMiembro  = new ArrayList<>();
     private AlergiaAdapter adapter;
 
-    DrawerLayout drawerLayout;
-    NavigationView navigationView;
-    MaterialToolbar toolbar;
 
-    private int idMiembro;
-    private int idPerfil;
-    String nombrePerfil, fechaNacimiento, sexo, tipoPerfil;
+
+    // ── Obligatorios de la base ──────────────────────────────────────
+    @Override
+    protected int getLayoutId()      { return R.layout.activity_alergias_miembro; }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_alergias_miembro);
+    protected int getNavItemActivo() { return R.id.nav_alergias; }
 
-        // IDs
-        idMiembro = getIntent().getIntExtra("idPerfil", 0);
-        idPerfil  = idMiembro; // son el mismo
+    @Override
+    protected void onPerfilReady() {
 
         // API y Room
         apiService = ApiClient.getInstance().create(ApiService.class);
         alergiaDao = VacunAppDatabase.getInstance(this).alergiaDao();
 
         initViews();
-        configurarDrawer();
         cargarCatalogo();
         cargarAlergiasMiembro(); // híbrido: API primero, Room si falla
     }
 
     // ── Cargar alergias: API primero, Room como respaldo ─────────────
     private void cargarAlergiasMiembro() {
-        apiService.getAlergiasMiembro(idMiembro)
+        apiService.getAlergiasMiembro(idPerfil)
                 .enqueue(new Callback<RespuestaDto<List<AlergiasDto.AlergiaMiembroDto>>>() {
                     @Override
                     public void onResponse(Call<RespuestaDto<List<AlergiasDto.AlergiaMiembroDto>>> call,
@@ -170,7 +163,7 @@ public class AlergiasMiembro extends AppCompatActivity {
         AlergiasDto.AlergiaDto seleccionada = listaCatalogo.get(position);
         int idAlergia = seleccionada.getId();
 
-        apiService.asignarAlergia(idMiembro, new AsignarAlergiaDto(idAlergia))
+        apiService.asignarAlergia(idPerfil, new AsignarAlergiaDto(idAlergia))
                 .enqueue(new Callback<RespuestaDto<Object>>() {
                     @Override
                     public void onResponse(Call<RespuestaDto<Object>> call,
@@ -210,7 +203,7 @@ public class AlergiasMiembro extends AppCompatActivity {
 
     // ── Eliminar: API + Room ─────────────────────────────────────────
     private void eliminarAlergia(int idAlergia, String nombreAlergia) {
-        apiService.quitarAlergia(idMiembro, idAlergia)
+        apiService.quitarAlergia(idPerfil, idAlergia)
                 .enqueue(new Callback<RespuestaDto<Object>>() {
                     @Override
                     public void onResponse(Call<RespuestaDto<Object>> call,
@@ -282,87 +275,6 @@ public class AlergiasMiembro extends AppCompatActivity {
         btnAgregarAlergia.setOnClickListener(v -> agregarAlergia());
     }
 
-    private void configurarDrawer() {
-        drawerLayout   = findViewById(R.id.drawerLayout);
-        navigationView = findViewById(R.id.navigationView);
-        toolbar        = findViewById(R.id.toolbar);
 
-        nombrePerfil    = getIntent().getStringExtra("nombre");
-        fechaNacimiento = getIntent().getStringExtra("fechaNacimiento");
-        sexo            = getIntent().getStringExtra("sexo");
-        tipoPerfil      = getIntent().getStringExtra("tipoPerfil");
 
-        TextView txtNombre = findViewById(R.id.txtNombre);
-        TextView txtEdad   = findViewById(R.id.txtEdad);
-        View header        = navigationView.getHeaderView(0);
-
-        ((TextView) header.findViewById(R.id.txtNombreMenu))
-                .setText(nombrePerfil != null ? nombrePerfil : "Sin nombre");
-        ((TextView) header.findViewById(R.id.txtEdadMenu))
-                .setText(fechaNacimiento != null
-                        ? calcularEdadCompleta(fechaNacimiento) : "Edad no disponible");
-
-        txtNombre.setText(nombrePerfil != null ? nombrePerfil : "Sin nombre");
-        txtNombre.setTextColor(ContextCompat.getColor(this, R.color.skyblue));
-        txtEdad.setText(fechaNacimiento != null
-                ? calcularEdadCompleta(fechaNacimiento) : "Edad no disponible");
-
-        toolbar.setBackgroundColor(ContextCompat.getColor(this, R.color.skyblue));
-
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar, R.string.open, R.string.close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        if ("Mascota".equals(tipoPerfil)) {
-            Menu menu = navigationView.getMenu();
-            menu.findItem(R.id.nav_centros).setVisible(false);
-            menu.findItem(R.id.nav_campanias).setVisible(false);
-        }
-
-        navigationView.setNavigationItemSelectedListener(item -> {
-            int id = item.getItemId();
-            Intent intent = null;
-
-            if      (id == R.id.nav_carnet)    intent = crearIntent(carnet_de_vacunacion.class);
-            else if (id == R.id.nav_escanear)  intent = crearIntent(EscanearCarnet.class);
-            else if (id == R.id.nav_carnets)   intent = crearIntent(CarnetEscaneados.class);
-            else if (id == R.id.nav_centros)   intent = crearIntent(CentrosDeVacunacion.class);
-            else if (id == R.id.nav_campanias) intent = crearIntent(Campanias.class);
-            else if (id == R.id.nav_pdf)       intent = crearIntent(ExportarPDF.class);
-            else if (id == R.id.nav_perfiles) {
-                startActivity(new Intent(this, pantalla_dashboard.class));
-                finish();
-            }
-
-            if (intent != null) startActivity(intent);
-            drawerLayout.closeDrawers();
-            return true;
-        });
-    }
-
-    private Intent crearIntent(Class<?> destino) {
-        Intent intent = new Intent(this, destino);
-        intent.putExtra("idPerfil",        idPerfil);
-        intent.putExtra("nombre",          nombrePerfil);
-        intent.putExtra("fechaNacimiento", fechaNacimiento);
-        intent.putExtra("sexo",            sexo);
-        intent.putExtra("tipoPerfil",      tipoPerfil);
-        return intent;
-    }
-
-    private String calcularEdadCompleta(String fecha) {
-        try {
-            SimpleDateFormat sdf = fecha.contains("/")
-                    ? new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                    : new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            Calendar nac = Calendar.getInstance();
-            nac.setTime(sdf.parse(fecha));
-            Calendar hoy = Calendar.getInstance();
-            int años  = hoy.get(Calendar.YEAR)  - nac.get(Calendar.YEAR);
-            int meses = hoy.get(Calendar.MONTH) - nac.get(Calendar.MONTH);
-            if (meses < 0) { años--; meses += 12; }
-            return años + " años y " + meses + " meses";
-        } catch (Exception e) { return "Edad no disponible"; }
-    }
 }
