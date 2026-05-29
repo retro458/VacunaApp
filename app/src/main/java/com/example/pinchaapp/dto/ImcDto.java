@@ -1,5 +1,7 @@
 package com.example.pinchaapp.dto;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.Date;
 
 public class ImcDto {
@@ -11,19 +13,18 @@ public class ImcDto {
         private int idMiembro;
         private Double peso;
         private Double altura;
-        private Date fecha;
+        private String fecha;  // ← String, no Date
 
         public RegistrarImcDto() {}
 
-        // Getters y Setters
         public int getIdMiembro() { return idMiembro; }
         public void setIdMiembro(int idMiembro) { this.idMiembro = idMiembro; }
         public Double getPeso() { return peso; }
         public void setPeso(Double peso) { this.peso = peso; }
         public Double getAltura() { return altura; }
         public void setAltura(Double altura) { this.altura = altura; }
-        public Date getFecha() { return fecha; }
-        public void setFecha(Date fecha) { this.fecha = fecha; }
+        public String getFecha() { return fecha; }
+        public void setFecha(String fecha) { this.fecha = fecha; }
     }
 
     public static class RegistrarCarnetDto {
@@ -49,31 +50,30 @@ public class ImcDto {
     // RESPONSE DTOs
     // ============================================================
     public static class ImcResponseDto {
+        @SerializedName("idImc")
         private int id;
-        private int idMiembro;
+
+        @SerializedName("peso")
         private Double peso;
+
+        @SerializedName("altura")
         private Double altura;
+
+        @SerializedName("resultado")
         private Double resultado;
+
+        @SerializedName("clasificacion")
         private String clasificacion;
-        private Date fecha;
 
-        public ImcResponseDto() {}
+        @SerializedName("fecha")
+        private String fecha;
 
-        // Getters y Setters
         public int getId() { return id; }
-        public void setId(int id) { this.id = id; }
-        public int getIdMiembro() { return idMiembro; }
-        public void setIdMiembro(int idMiembro) { this.idMiembro = idMiembro; }
         public Double getPeso() { return peso; }
-        public void setPeso(Double peso) { this.peso = peso; }
         public Double getAltura() { return altura; }
-        public void setAltura(Double altura) { this.altura = altura; }
         public Double getResultado() { return resultado; }
-        public void setResultado(Double resultado) { this.resultado = resultado; }
         public String getClasificacion() { return clasificacion; }
-        public void setClasificacion(String clasificacion) { this.clasificacion = clasificacion; }
-        public Date getFecha() { return fecha; }
-        public void setFecha(Date fecha) { this.fecha = fecha; }
+        public String getFecha() { return fecha; }
     }
 
     public static class CarnetEscaneadoResponseDto {

@@ -18,4 +18,10 @@ public interface AlergiaDao {
 
     @Query("SELECT * FROM alergia WHERE idPerfil = :idPerfil")
     List<Alergia> obtenerPorPerfil(int idPerfil);
+
+    @Query("DELETE FROM alergia WHERE idPerfil = :idPerfil AND idAlergiaApi = :idAlergiaApi")
+    void eliminarPorApiId(int idPerfil, int idAlergiaApi);
+
+    @Query("DELETE FROM alergia WHERE idPerfil = :idPerfil")
+    void eliminarTodosDePerfil(int idPerfil);
 }

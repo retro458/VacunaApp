@@ -13,6 +13,14 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import com.example.pinchaapp.dto.AuthDto;
+import com.example.pinchaapp.dto.RespuestaDto;
+import com.example.pinchaapp.network.ApiClient;
+import com.example.pinchaapp.network.ApiService;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import com.example.pinchaapp.database.VacunAppDatabase;
 import com.example.pinchaapp.database.dao.UsuarioDao;
@@ -25,6 +33,7 @@ public class CrearCuenta extends AppCompatActivity {
     private EditText etNombre, etApellido, etEmail, etTelefono, etPassword, etConfirmPassword;
     private Button btnCrearCuenta, btnCancelar;
     private UsuarioDao usuarioDao;
+    private ApiService api;
 
 
     @Override
@@ -35,6 +44,8 @@ public class CrearCuenta extends AppCompatActivity {
 
         // DAO
         usuarioDao = VacunAppDatabase.getInstance(this).usuarioDao();
+        // Inicializar el cliente API de Retrofit
+        api = ApiClient.getInstance().create(ApiService.class);
 
         etNombre          = findViewById(R.id.etNombre);
         etApellido        = findViewById(R.id.etApellido);
@@ -91,7 +102,6 @@ public class CrearCuenta extends AppCompatActivity {
                     return;
                 }
 
-                // DTO
                 RegistroDto registroDto =
                         new RegistroDto(
                                 nombre + " " + apellido,
@@ -99,6 +109,51 @@ public class CrearCuenta extends AppCompatActivity {
                                 password,
                                 telefono
                         );
+
+                api.registro(registroDto)
+
+                        .enqueue(new Callback<RespuestaDto<Object>>() {
+
+                            @Override
+                            public void onResponse(
+                                    Call<RespuestaDto<Object>> call,
+
+                                    Response<RespuestaDto<Object>> response
+                            ) {
+
+                                if (response.isSuccessful()
+                                        && response.body() != null
+                                        && response.body().isExito()) {
+
+                                    Toast.makeText(
+                                            getApplicationContext(),
+                                            "Cuenta creada",
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+
+                                } else {
+
+                                    Toast.makeText(
+                                            getApplicationContext(),
+                                            "Error al registrar",
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(
+                                    Call<RespuestaDto<Object>> call,
+                                    Throwable t
+                            ) {
+
+                                Toast.makeText(
+                                        getApplicationContext(),
+                                        "Error conexión",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+                            }
+                        });
 
                 // ENTITY - Fix: Use 5 arguments required by Usuario constructor
                 Usuario nuevoUsuario =
@@ -112,12 +167,6 @@ public class CrearCuenta extends AppCompatActivity {
 
                 // DAO
                 usuarioDao.insertar(nuevoUsuario);
-
-                runOnUiThread(() -> {
-                    Toast.makeText(this, "Cuenta creada exitosamente!", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(this, infoApp.class));
-                    finish();
-                });
             }).start();
         });
 

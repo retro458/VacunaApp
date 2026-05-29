@@ -39,7 +39,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class CentrosDeVacunacion extends AppCompatActivity {
-    // ========================= PUEDE CAMBIAR
     DrawerLayout drawerLayout;
     NavigationView navigationView;
     MaterialToolbar toolbar;

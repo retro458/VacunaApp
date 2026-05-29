@@ -11,7 +11,10 @@ import com.example.pinchaapp.R;
 
 import org.jspecify.annotations.NonNull;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
+
 import com.example.pinchaapp.database.entities.IMCEntity;
 
 public class ImcAdapter
@@ -37,20 +40,23 @@ public class ImcAdapter
     }
 
     @Override
-    public void onBindViewHolder(
-            @NonNull ViewHolder holder,
-            int position
-    ) {
-
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         IMCEntity imc = lista.get(position);
 
-        holder.txtIMC.setText(
-                "IMC: " + String.format("%.1f", imc.getImc())
-        );
-
+        holder.txtIMC.setText("IMC: " + String.format("%.1f", imc.getImc()));
         holder.txtCategoria.setText(imc.getCategoria());
 
-        holder.txtFecha.setText(imc.getFecha());
+        try {
+            String fechaRaw = imc.getFecha();
+            if (fechaRaw != null && fechaRaw.contains("T")) {
+                fechaRaw = fechaRaw.split("T")[0];
+            }
+            SimpleDateFormat entrada = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            SimpleDateFormat salida  = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            holder.txtFecha.setText(salida.format(entrada.parse(fechaRaw)));
+        } catch (Exception e) {
+            holder.txtFecha.setText(imc.getFecha()); // si falla muestra como está
+        }
     }
 
     @Override

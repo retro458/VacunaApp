@@ -21,6 +21,13 @@ import java.util.Date;
 import java.util.Locale;
 import com.example.pinchaapp.database.VacunAppDatabase;
 import com.example.pinchaapp.database.entities.IMCEntity;
+import com.example.pinchaapp.dto.ImcDto;
+import com.example.pinchaapp.dto.RespuestaDto;
+import com.example.pinchaapp.network.ApiClient;
+import com.example.pinchaapp.network.ApiService;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class RegistroImc extends AppCompatActivity {
@@ -31,90 +38,137 @@ public class RegistroImc extends AppCompatActivity {
     TextView txtResultado, txtCategoria;
     MaterialButton btnGuardar;
     VacunAppDatabase db;
+    ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registro_imc);
 
-        // TOOLBAR
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        // RECIBIR DATOS
-        idPerfil = getIntent().getIntExtra("idPerfil", 0);
-        db = VacunAppDatabase.getInstance(this);
+        idPerfil   = getIntent().getIntExtra("idPerfil", 0);
+        db         = VacunAppDatabase.getInstance(this);
+        apiService = ApiClient.getInstance().create(ApiService.class);
 
-        // VISTAS
         etPeso       = findViewById(R.id.etPeso);
         etAltura     = findViewById(R.id.etAltura);
         txtResultado = findViewById(R.id.txtResultadoIMC);
         txtCategoria = findViewById(R.id.txtCategoriaIMC);
         btnGuardar   = findViewById(R.id.btnGuardar);
 
-        // CALCULAR
         findViewById(R.id.btnCalcular).setOnClickListener(v -> calcularIMC());
-
-        // GUARDAR
         btnGuardar.setOnClickListener(v -> guardarIMC());
     }
 
     private void calcularIMC() {
-
         String pesoStr   = etPeso.getText().toString().trim();
         String alturaStr = etAltura.getText().toString().trim();
 
-        if (pesoStr.isEmpty()) {
-            etPeso.setError("Ingresa tu peso");
-            return;
-        }
-        if (alturaStr.isEmpty()) {
-            etAltura.setError("Ingresa tu altura");
-            return;
-        }
+        if (pesoStr.isEmpty()) { etPeso.setError("Ingresa tu peso"); return; }
+        if (alturaStr.isEmpty()) { etAltura.setError("Ingresa tu altura"); return; }
 
         double peso   = Double.parseDouble(pesoStr);
-        double altura = Double.parseDouble(alturaStr) / 100; // cm a metros
+        double altura = Double.parseDouble(alturaStr) / 100;
+        imcCalculado  = peso / (altura * altura);
 
-        imcCalculado = peso / (altura * altura);
-
-        // Mostrar resultado
         txtResultado.setText(String.format(Locale.getDefault(), "%.1f", imcCalculado));
         txtCategoria.setText(obtenerCategoria(imcCalculado));
         txtResultado.setTextColor(obtenerColor(imcCalculado));
-
-        // Mostrar botón guardar
         btnGuardar.setVisibility(View.VISIBLE);
     }
 
     private void guardarIMC() {
         String pesoStr   = etPeso.getText().toString().trim();
         String alturaStr = etAltura.getText().toString().trim();
-
         if (pesoStr.isEmpty() || alturaStr.isEmpty()) return;
 
         double peso   = Double.parseDouble(pesoStr);
-        double altura = Double.parseDouble(alturaStr);
+        double altura = Double.parseDouble(alturaStr) / 100; // metros para la API
 
-        String categoria = obtenerCategoria(imcCalculado);
-        String fecha = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        String fechaHoy = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                 .format(new Date());
 
-        IMCEntity imc = new IMCEntity(idPerfil, peso, altura, imcCalculado, categoria, fecha);
+        // Construir request para la API
+        ImcDto.RegistrarImcDto request = new ImcDto.RegistrarImcDto();
+        request.setIdMiembro(idPerfil);
+        request.setPeso(peso);
+        request.setAltura(altura);
+        request.setFecha(fechaHoy);
 
-        new Thread(() -> {
-            try {
-                db.imcDao().insertar(imc);
-                runOnUiThread(() -> {
-                    Toast.makeText(this, "IMC guardado ", Toast.LENGTH_SHORT).show();
-                    setResult(RESULT_OK);
-                    finish();
-                });
-            } catch (Exception e) {
-                runOnUiThread(() ->
-                        Toast.makeText(this, "Error al guardar: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                );
+        btnGuardar.setEnabled(false);
+
+        apiService.registrarImc(request).enqueue(new Callback<RespuestaDto<ImcDto.ImcResponseDto>>() {
+            @Override
+            public void onResponse(Call<RespuestaDto<ImcDto.ImcResponseDto>> call,
+                                   Response<RespuestaDto<ImcDto.ImcResponseDto>> response) {
+
+                // ← AGREGAR ESTO
+                try {
+                    if (!response.isSuccessful()) {
+                        String errorBody = response.errorBody().string();
+                        Toast.makeText(RegistroImc.this,
+                                "Error " + response.code() + ": " + errorBody,
+                                Toast.LENGTH_LONG).show();
+                        btnGuardar.setEnabled(true);
+                        return;
+                    }
+                } catch (Exception e) { e.printStackTrace(); }
+
+                if (response.isSuccessful()
+                        && response.body() != null
+                        && response.body().getData() != null) {
+
+                    ImcDto.ImcResponseDto resultado = response.body().getData();
+
+                    // Guardar en Room con el id de la API y clasificacion que calculó el servidor
+                    IMCEntity entity = new IMCEntity(
+                            idPerfil,
+                            resultado.getId(),
+                            peso,
+                            altura * 100,
+                            resultado.getResultado(),
+                            resultado.getClasificacion(),
+                            fechaHoy
+                    );
+
+                    new Thread(() -> {
+                        db.imcDao().insertar(entity);
+                        runOnUiThread(() -> {
+                            Toast.makeText(RegistroImc.this,
+                                    "IMC guardado", Toast.LENGTH_SHORT).show();
+                            setResult(RESULT_OK);
+                            finish();
+                        });
+                    }).start();
+
+                } else {
+                    guardarSoloLocal(peso, altura * 100, fechaHoy);
+                }
             }
+
+            @Override
+            public void onFailure(Call<RespuestaDto<ImcDto.ImcResponseDto>> call, Throwable t) {
+                guardarSoloLocal(peso, altura * 100, fechaHoy);
+            }
+        });
+    }
+
+    private void guardarSoloLocal(double peso, double alturaCm, String fecha) {
+        IMCEntity entity = new IMCEntity(
+                idPerfil, 0, peso, alturaCm,
+                imcCalculado, obtenerCategoria(imcCalculado), fecha
+        );
+        new Thread(() -> {
+            db.imcDao().insertar(entity);
+            runOnUiThread(() -> {
+                Toast.makeText(this,
+                        "Sin conexión — guardado localmente",
+                        Toast.LENGTH_SHORT).show();
+                setResult(RESULT_OK);
+                finish();
+            });
         }).start();
     }
 

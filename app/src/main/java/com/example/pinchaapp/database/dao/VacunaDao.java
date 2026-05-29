@@ -14,27 +14,26 @@ import java.util.List;
 @Dao
 public interface VacunaDao {
 
-    // Insertar nueva vacuna agendada
     @Insert
     void insertarHistorial(VacunaHistorial historial);
 
-    // Traer todas las vacunas de un perfil
-    @Query("SELECT * FROM historial_vacuna WHERE id_perfil = :idPerfil ORDER BY id DESC")
+    @Query("SELECT * FROM historial WHERE idPerfil = :idPerfil")
+    List<VacunaHistorial> obtenerPorPerfil(int idPerfil);
+
+    // ← el que faltaba (mismo que obtenerPorPerfil)
+    @Query("SELECT * FROM historial WHERE idPerfil = :idPerfil")
     List<VacunaHistorial> obtenerTodasDeUnPerfil(int idPerfil);
 
-    // Marcar como aplicada (poner fecha)
-    @Query("UPDATE historial_vacuna SET fecha_aplicacion = :fecha WHERE id = :id")
-    void marcarAplicada(int id, String fecha);
+    @Query("DELETE FROM historial WHERE idPerfil = :idPerfil")
+    void eliminarTodosDePerfil(int idPerfil);
 
-    // Contar completadas (para gráfica)
-    @Query("SELECT COUNT(*) FROM historial_vacuna WHERE id_perfil = :idPerfil AND fecha_aplicacion IS NOT NULL")
+    @Query("SELECT COUNT(*) FROM historial WHERE idPerfil = :idPerfil")
     int contarCompletadas(int idPerfil);
 
-    // Contar pendientes (para gráfica)
-    @Query("SELECT COUNT(*) FROM historial_vacuna WHERE id_perfil = :idPerfil AND fecha_aplicacion IS NULL")
+    @Query("SELECT COUNT(*) FROM historial WHERE idPerfil = :idPerfil AND CAST(dosisNumero AS INTEGER) < CAST(lote AS INTEGER)")
     int contarPendientes(int idPerfil);
 
-    // Eliminar una vacuna
-    @Delete
-    void eliminar(VacunaHistorial historial);
+    // ← para marcar aplicada desde el adapter
+    @Query("UPDATE historial SET fechaAplicacion = :fecha WHERE idLocal = :idHistorial")
+    void marcarAplicada(int idHistorial, String fecha);
 }

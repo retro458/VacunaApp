@@ -1,46 +1,16 @@
 package com.example.pinchaapp.dto;
 
+import com.google.gson.annotations.SerializedName;
+
 public class AlergiasDto {
 
-    // ============================================================
-    // REQUEST DTOs
-    // ============================================================
-
-    public static class CrearAlergiaDto {
-        private String nombre;
-
-        public CrearAlergiaDto() {}
-
-        public CrearAlergiaDto(String nombre) {
-            this.nombre = nombre;
-        }
-
-        public String getNombre() { return nombre; }
-        public void setNombre(String nombre) { this.nombre = nombre; }
-    }
-
-    public static class AsignarAlergiaDto {
-        private int idAlergia;
-
-        public AsignarAlergiaDto() {}
-
-        public AsignarAlergiaDto(int idAlergia) {
-            this.idAlergia = idAlergia;
-        }
-
-        public int getIdAlergia() { return idAlergia; }
-        public void setIdAlergia(int idAlergia) { this.idAlergia = idAlergia; }
-    }
-
-    // ============================================================
-    // RESPONSE DTOs
-    // ============================================================
-
+    // Para GET /api/alergias (catálogo) — devuelve "id"
     public static class AlergiaDto {
+        @SerializedName("id")
         private int id;
-        private String nombre;
 
-        public AlergiaDto() {}
+        @SerializedName("nombre")
+        private String nombre;
 
         public int getId() { return id; }
         public void setId(int id) { this.id = id; }
@@ -49,20 +19,24 @@ public class AlergiasDto {
         public void setNombre(String nombre) { this.nombre = nombre; }
     }
 
-    public static class MiembroAlergiaDto {
+    // Para GET /api/alergias/miembro/{id} — devuelve "idAlergia"
+    public static class AlergiaMiembroDto {
+        @SerializedName("idMiembroAlergia")
         private int idMiembroAlergia;
+
+        @SerializedName("idAlergia")
         private int idAlergia;
+
+        @SerializedName("nombre")
         private String nombre;
 
-        public MiembroAlergiaDto() {}
-
-        public int getIdMiembroAlergia() { return idMiembroAlergia; }
-        public void setIdMiembroAlergia(int idMiembroAlergia) { this.idMiembroAlergia = idMiembroAlergia; }
-
         public int getIdAlergia() { return idAlergia; }
-        public void setIdAlergia(int idAlergia) { this.idAlergia = idAlergia; }
-
         public String getNombre() { return nombre; }
-        public void setNombre(String nombre) { this.nombre = nombre; }
+    }
+
+    public static class CrearAlergiaDto {
+        private String nombre;
+        public CrearAlergiaDto(String nombre) { this.nombre = nombre; }
+        public String getNombre() { return nombre; }
     }
 }

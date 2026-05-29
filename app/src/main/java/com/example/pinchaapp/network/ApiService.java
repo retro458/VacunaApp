@@ -104,23 +104,23 @@ public interface ApiService {
     );
 
     // ==================== CENTROS ====================
-    @GET("api/centros")
+    @GET("api/centro")
     Call<RespuestaDto<List<CentroDto>>> getCentros();
 
-    @GET("api/centros/{id}")
+    @GET("api/centro/{id}")
     Call<RespuestaDto<CentroDto>> getCentro(@Path("id") int id);
 
-    @GET("api/centros/{id}/detalle")
+    @GET("api/centro/{id}/detalle")
     Call<RespuestaDto<CentroDto>> getCentroDetalle(@Path("id") int id);
 
-    @GET("api/centros/cercanos")
+    @GET("api/centro/cercanos")
     Call<RespuestaDto<List<CentroDto>>> getCentrosCercanos(
             @Query("latitud") double latitud,
             @Query("longitud") double longitud,
             @Query("radioKm") double radioKm
     );
 
-    @GET("api/centros/campania/{idCampania}")
+    @GET("api/centro/campania/{idCampania}")
     Call<RespuestaDto<List<CentroDto>>> getCentrosPorCampania(@Path("idCampania") int idCampania);
 
     // ==================== CAMPAÑAS ====================
@@ -135,7 +135,7 @@ public interface ApiService {
     Call<RespuestaDto<ImcDto.ImcResponseDto>> registrarImc(@Body ImcDto.RegistrarImcDto body);
 
     @GET("api/imc/{idMiembro}")
-    Call<RespuestaDto<List<ImcDto>>> getHistorialImc(@Path("idMiembro") int idMiembro);
+    Call<RespuestaDto<List<ImcDto.ImcResponseDto>>> getHistorialImc(@Path("idMiembro") int idMiembro);
 
     @GET("api/imc/carnet/{idMiembro}")
     Call<RespuestaDto<List<CarnetDto>>> getCarnets(@Path("idMiembro") int idMiembro);
@@ -151,7 +151,9 @@ public interface ApiService {
     Call<RespuestaDto<List<AlergiasDto.AlergiaDto>>> getAlergias();
 
     @GET("api/alergias/miembro/{idMiembro}")
-    Call<RespuestaDto<List<AlergiasDto.AlergiaDto>>> getAlergiasMiembro(@Path("idMiembro") int idMiembro);
+    Call<RespuestaDto<List<AlergiasDto.AlergiaMiembroDto>>> getAlergiasMiembro(
+            @Path("idMiembro") int idMiembro
+    );
 
     @POST("api/alergias/miembro/{idMiembro}")
     Call<RespuestaDto<Object>> asignarAlergia(

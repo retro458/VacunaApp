@@ -30,9 +30,10 @@ import com.example.pinchaapp.database.entities.Alergia;
                 PerfilMascota.class,
                 VacunaHistorial.class,
                 IMCEntity.class,
-                Alergia.class
+                Alergia.class,
+                Vacuna.class
         },
-        version = 7,
+        version = 10,
         exportSchema = false
 )
 public abstract class VacunAppDatabase extends RoomDatabase {

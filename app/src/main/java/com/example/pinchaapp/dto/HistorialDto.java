@@ -1,120 +1,152 @@
 package com.example.pinchaapp.dto;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.Date;
 
 public class HistorialDto {
 
-    // ============================================================
-    // REQUEST DTOs
-    // ============================================================
-    public static class RegistrarVacunacionDto {
-        private int idMiembro;
-        private int idVacuna;
-        private Integer idCentro;
-        private Date fechaAplicacion;
-        private int dosisNumero;
-        private String lote;
-        private String nombreMedico;
-        private String observaciones;
+    // ── REQUEST (lo que ya tenés) ────────────────────────────────────
+    @SerializedName("idMiembro")
+    private int idMiembro;
 
-        public RegistrarVacunacionDto() {}
+    @SerializedName("idVacuna")
+    private int idVacuna;
 
-        // Getters y Setters
-        public int getIdMiembro() { return idMiembro; }
-        public void setIdMiembro(int idMiembro) { this.idMiembro = idMiembro; }
-        public int getIdVacuna() { return idVacuna; }
-        public void setIdVacuna(int idVacuna) { this.idVacuna = idVacuna; }
-        public Integer getIdCentro() { return idCentro; }
-        public void setIdCentro(Integer idCentro) { this.idCentro = idCentro; }
-        public Date getFechaAplicacion() { return fechaAplicacion; }
-        public void setFechaAplicacion(Date fechaAplicacion) { this.fechaAplicacion = fechaAplicacion; }
-        public int getDosisNumero() { return dosisNumero; }
-        public void setDosisNumero(int dosisNumero) { this.dosisNumero = dosisNumero; }
-        public String getLote() { return lote; }
-        public void setLote(String lote) { this.lote = lote; }
-        public String getNombreMedico() { return nombreMedico; }
-        public void setNombreMedico(String nombreMedico) { this.nombreMedico = nombreMedico; }
-        public String getObservaciones() { return observaciones; }
-        public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
+    @SerializedName("idCentro")
+    private int idCentro;
+
+    @SerializedName("fechaAplicacion")
+    private String fechaAplicacion;
+
+    @SerializedName("dosisNumero")
+    private int dosisNumero;
+
+    @SerializedName("lote")
+    private String lote;
+
+    @SerializedName("nombreMedico")
+    private String nombreMedico;
+
+    @SerializedName("observaciones")
+    private String observaciones;
+
+    public HistorialDto(int idMiembro, int idVacuna, int idCentro,
+                        String fechaAplicacion, int dosisNumero,
+                        String lote, String nombreMedico, String observaciones) {
+        this.idMiembro       = idMiembro;
+        this.idVacuna        = idVacuna;
+        this.idCentro        = idCentro;
+        this.fechaAplicacion = fechaAplicacion;
+        this.dosisNumero     = dosisNumero;
+        this.lote            = lote;
+        this.nombreMedico    = nombreMedico;
+        this.observaciones   = observaciones;
     }
 
-    // ============================================================
-    // RESPONSE DTOs
-    // ============================================================
+    // Getters
+    public int getIdMiembro() { return idMiembro; }
+    public int getIdVacuna() { return idVacuna; }
+    public int getIdCentro() { return idCentro; }
+    public String getFechaAplicacion() { return fechaAplicacion; }
+    public int getDosisNumero() { return dosisNumero; }
+    public String getLote() { return lote; }
+    public String getNombreMedico() { return nombreMedico; }
+    public String getObservaciones() { return observaciones; }
+
+    // ── RESPONSE (lo que le faltaba) ─────────────────────────────────
     public static class HistorialResponseDto {
+        @SerializedName("id")
         private int id;
-        private Date fechaAplicacion;
-        private Date proximaDosis;
+
+        @SerializedName("fechaAplicacion")
+        private String fechaAplicacion;
+
+        @SerializedName("proximaDosis")
+        private String proximaDosis;
+
+        @SerializedName("dosisNumero")
         private int dosisNumero;
+
+        @SerializedName("lote")
         private String lote;
+
+        @SerializedName("nombreMedico")
         private String nombreMedico;
+
+        @SerializedName("observaciones")
         private String observaciones;
+
+        @SerializedName("vacuna")
         private String vacuna;
+
+        @SerializedName("fabricante")
         private String fabricante;
+
+        @SerializedName("tipoVacuna")
         private String tipoVacuna;
+
+        @SerializedName("centro")
         private String centro;
+
+        @SerializedName("centroDireccion")
         private String centroDireccion;
+
+        @SerializedName("recordatorioEstado")
         private String recordatorioEstado;
-        private Date fechaRecordatorio;
+
+        @SerializedName("fechaRecordatorio")
+        private String fechaRecordatorio;
 
         public HistorialResponseDto() {}
 
-        // Getters y Setters
         public int getId() { return id; }
-        public void setId(int id) { this.id = id; }
-        public Date getFechaAplicacion() { return fechaAplicacion; }
-        public void setFechaAplicacion(Date fechaAplicacion) { this.fechaAplicacion = fechaAplicacion; }
-        public Date getProximaDosis() { return proximaDosis; }
-        public void setProximaDosis(Date proximaDosis) { this.proximaDosis = proximaDosis; }
+        public String getFechaAplicacion() { return fechaAplicacion; }
+        public String getProximaDosis() { return proximaDosis; }
         public int getDosisNumero() { return dosisNumero; }
-        public void setDosisNumero(int dosisNumero) { this.dosisNumero = dosisNumero; }
         public String getLote() { return lote; }
-        public void setLote(String lote) { this.lote = lote; }
         public String getNombreMedico() { return nombreMedico; }
-        public void setNombreMedico(String nombreMedico) { this.nombreMedico = nombreMedico; }
         public String getObservaciones() { return observaciones; }
-        public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
         public String getVacuna() { return vacuna; }
-        public void setVacuna(String vacuna) { this.vacuna = vacuna; }
         public String getFabricante() { return fabricante; }
-        public void setFabricante(String fabricante) { this.fabricante = fabricante; }
         public String getTipoVacuna() { return tipoVacuna; }
-        public void setTipoVacuna(String tipoVacuna) { this.tipoVacuna = tipoVacuna; }
         public String getCentro() { return centro; }
-        public void setCentro(String centro) { this.centro = centro; }
         public String getCentroDireccion() { return centroDireccion; }
-        public void setCentroDireccion(String centroDireccion) { this.centroDireccion = centroDireccion; }
         public String getRecordatorioEstado() { return recordatorioEstado; }
-        public void setRecordatorioEstado(String recordatorioEstado) { this.recordatorioEstado = recordatorioEstado; }
-        public Date getFechaRecordatorio() { return fechaRecordatorio; }
-        public void setFechaRecordatorio(Date fechaRecordatorio) { this.fechaRecordatorio = fechaRecordatorio; }
+        public String getFechaRecordatorio() { return fechaRecordatorio; }
     }
 
+    // ── PRÓXIMAS DOSIS ────────────────────────────────────────────────
     public static class ProximaDosisResponseDto {
+        @SerializedName("miembro")
         private String miembro;
+
+        @SerializedName("tipoMiembro")
         private String tipoMiembro;
+
+        @SerializedName("vacuna")
         private String vacuna;
+
+        @SerializedName("dosisAplicada")
         private int dosisAplicada;
-        private Date proximaDosis;
+
+        @SerializedName("proximaDosis")
+        private String proximaDosis;
+
+        @SerializedName("diasRestantes")
         private Integer diasRestantes;
+
+        @SerializedName("recordatorio")
         private String recordatorio;
 
         public ProximaDosisResponseDto() {}
 
-        // Getters y Setters
         public String getMiembro() { return miembro; }
-        public void setMiembro(String miembro) { this.miembro = miembro; }
         public String getTipoMiembro() { return tipoMiembro; }
-        public void setTipoMiembro(String tipoMiembro) { this.tipoMiembro = tipoMiembro; }
         public String getVacuna() { return vacuna; }
-        public void setVacuna(String vacuna) { this.vacuna = vacuna; }
         public int getDosisAplicada() { return dosisAplicada; }
-        public void setDosisAplicada(int dosisAplicada) { this.dosisAplicada = dosisAplicada; }
-        public Date getProximaDosis() { return proximaDosis; }
-        public void setProximaDosis(Date proximaDosis) { this.proximaDosis = proximaDosis; }
+        public String getProximaDosis() { return proximaDosis; }
         public Integer getDiasRestantes() { return diasRestantes; }
-        public void setDiasRestantes(Integer diasRestantes) { this.diasRestantes = diasRestantes; }
         public String getRecordatorio() { return recordatorio; }
-        public void setRecordatorio(String recordatorio) { this.recordatorio = recordatorio; }
     }
 }

@@ -7,6 +7,7 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -37,26 +38,33 @@ import com.example.pinchaapp.database.VacunAppDatabase;
 import com.example.pinchaapp.database.entities.Vacuna;
 import com.example.pinchaapp.database.entities.VacunaHistorial;
 import com.example.pinchaapp.dto.VacunaDto;
+import com.example.pinchaapp.database.dao.VacunaDao;
 import com.example.pinchaapp.adapters.VacunaAdapter;
 import com.example.pinchaapp.database.entities.IMCEntity;
 import com.example.pinchaapp.adapters.ImcAdapter;
 
+import com.example.pinchaapp.dto.ImcDto;
+import com.example.pinchaapp.dto.RespuestaDto;
+import com.example.pinchaapp.network.ApiClient;
+import com.example.pinchaapp.network.ApiService;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+
 
 public class carnet_de_vacunacion extends AppCompatActivity {
+    ApiService apiService;
 
     DrawerLayout drawerLayout;
     NavigationView navigationView;
     MaterialToolbar toolbar;
 
-    String nombrePerfil;
-    String fechaNacimiento;
-    String sexo;
-    String tipoPerfil;
+    String nombrePerfil, fechaNacimiento, sexo, tipoPerfil;
     int idPerfil;
 
     TextView txtNombreMenu, txtEdadMenu;
-    RecyclerView rvVacunas;
-    RecyclerView rvIMC;
+    RecyclerView rvVacunas, rvIMC;
     VacunaAdapter adapter;
     ImcAdapter imcAdapter;
     List<VacunaDto> listaVacunas = new ArrayList<>();
@@ -88,6 +96,8 @@ public class carnet_de_vacunacion extends AppCompatActivity {
         View header = navigationView.getHeaderView(0);
         txtNombreMenu = header.findViewById(R.id.txtNombreMenu);
         txtEdadMenu   = header.findViewById(R.id.txtEdadMenu);
+
+        apiService = ApiClient.getInstance().create(ApiService.class);
 
         // =========================
         // RECIBIR DATOS
@@ -256,6 +266,9 @@ public class carnet_de_vacunacion extends AppCompatActivity {
             runOnUiThread(() -> {
                 PieChart pieChart = findViewById(R.id.pieChart);
 
+                // ← PROTECCIÓN: si no existe en el XML no crashea
+                if (pieChart == null) return;
+
                 if (completadas == 0 && pendientes == 0) {
                     pieChart.setNoDataText("Sin vacunas registradas");
                     pieChart.invalidate();
@@ -263,19 +276,15 @@ public class carnet_de_vacunacion extends AppCompatActivity {
                 }
 
                 List<PieEntry> entries = new ArrayList<>();
-                if (completadas > 0)
-                    entries.add(new PieEntry(completadas, "Completas"));
-                if (pendientes > 0)
-                    entries.add(new PieEntry(pendientes, "Pendientes"));
+                if (completadas > 0) entries.add(new PieEntry(completadas, "Completas"));
+                if (pendientes > 0)  entries.add(new PieEntry(pendientes, "Pendientes"));
 
                 PieDataSet dataSet = new PieDataSet(entries, "");
                 dataSet.setColors(
                         ContextCompat.getColor(this, R.color.skyblue),
-                        ContextCompat.getColor(this, R.color.blue_light)
-                );
+                        ContextCompat.getColor(this, R.color.blue_light));
                 dataSet.setValueTextSize(12f);
-                dataSet.setValueTextColor(
-                        ContextCompat.getColor(this, R.color.white));
+                dataSet.setValueTextColor(ContextCompat.getColor(this, R.color.white));
 
                 PieData data = new PieData(dataSet);
                 pieChart.setData(data);
@@ -296,15 +305,15 @@ public class carnet_de_vacunacion extends AppCompatActivity {
     // =========================
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+           super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == 100 && resultCode == RESULT_OK) {
-            cargarVacunas();
-        }
+          if (requestCode == 100 && resultCode == RESULT_OK) {
+          cargarVacunas();
+      }
 
-        if (requestCode == 200 && resultCode == RESULT_OK) {
-            cargarIMC();
-        }
+      if (requestCode == 200 && resultCode == RESULT_OK) {
+          cargarIMC();
+      }
     }
 
     // =========================
@@ -353,13 +362,22 @@ public class carnet_de_vacunacion extends AppCompatActivity {
             List<VacunaDto> lista = new ArrayList<>();
             for (VacunaHistorial h : historial) {
                 boolean aplicada = h.getFechaAplicacion() != null;
+
+                // ← CAMBIO AQUÍ
+                int totalDosis = 1;
+                try {
+                    totalDosis = Integer.parseInt(h.getLote());
+                } catch (Exception e) {
+                    totalDosis = 1;
+                }
+
                 lista.add(new VacunaDto(
-                        h.getId(),
+                        h.getIdVacuna(),
                         h.getNombreVacuna(),
                         h.getDosisNumero(),
-                        h.getTotalDosis(),
+                        totalDosis,
                         h.getFechaAplicacion(),
-                        h.getProximaDosis(),
+                        h.getNombreMedico(),
                         h.getObservaciones(),
                         aplicada
                 ));
@@ -388,30 +406,71 @@ public class carnet_de_vacunacion extends AppCompatActivity {
     }
 
     private void cargarIMC() {
+        apiService.getHistorialImc(idPerfil).enqueue(new Callback<RespuestaDto<List<ImcDto.ImcResponseDto>>>() {
+            @Override
+            public void onResponse(Call<RespuestaDto<List<ImcDto.ImcResponseDto>>> call,
+                                   Response<RespuestaDto<List<ImcDto.ImcResponseDto>>> response) {
 
-        new Thread(() -> {
+                if (response.isSuccessful()
+                        && response.body() != null
+                        && response.body().isExito()) {
 
-            List<IMCEntity> registros =
-                    db.imcDao().obtenerPorPerfil(idPerfil);
+                    List<ImcDto.ImcResponseDto> listaApi = response.body().getData();
 
-            runOnUiThread(() -> {
+                    // Convertir API → IMCEntity para el adapter
+                    List<IMCEntity> entidades = new ArrayList<>();
+                    for (ImcDto.ImcResponseDto dto : listaApi) {
+                        IMCEntity e = new IMCEntity();
+                        e.setIdImcApi(dto.getId());
+                        e.setIdPerfil(idPerfil);
+                        e.setPeso(dto.getPeso());
+                        e.setAltura(dto.getAltura());
+                        e.setImc(dto.getResultado());
+                        e.setCategoria(dto.getClasificacion());
+                        e.setFecha(dto.getFecha());
+                        entidades.add(e);
+                    }
 
-                listaIMC.clear();
-                listaIMC.addAll(registros);
+                    // Sincronizar Room
+                    new Thread(() -> {
+                        db.imcDao().eliminarTodosDePerfil(idPerfil);
+                        for (IMCEntity e : entidades) {
+                            db.imcDao().insertar(e);
+                        }
+                    }).start();
 
-                if (imcAdapter == null) {
-
-                    imcAdapter =
-                            new ImcAdapter(listaIMC);
-
-                    rvIMC.setAdapter(imcAdapter);
+                    mostrarIMC(entidades);
 
                 } else {
-
-                    imcAdapter.notifyDataSetChanged();
+                    cargarIMCDesdeRoom();
                 }
-            });
+            }
 
+            @Override
+            public void onFailure(Call<RespuestaDto<List<ImcDto.ImcResponseDto>>> call, Throwable t) {
+                cargarIMCDesdeRoom();
+            }
+        });
+    }
+
+    private void cargarIMCDesdeRoom() {
+        new Thread(() -> {
+            List<IMCEntity> registros = db.imcDao().obtenerPorPerfil(idPerfil);
+            runOnUiThread(() -> {
+                mostrarIMC(registros);
+                Toast.makeText(this, "Sin conexión — datos locales", Toast.LENGTH_SHORT).show();
+            });
         }).start();
+    }
+
+    private void mostrarIMC(List<IMCEntity> registros) {
+        listaIMC.clear();
+        listaIMC.addAll(registros);
+        if (imcAdapter == null) {
+            imcAdapter = new ImcAdapter(listaIMC);
+            rvIMC.setAdapter(imcAdapter);
+        } else {
+            imcAdapter.notifyDataSetChanged();
+        }
     }
 }

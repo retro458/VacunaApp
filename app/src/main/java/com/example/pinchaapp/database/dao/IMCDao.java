@@ -16,4 +16,6 @@ public interface IMCDao {
     @Query("SELECT * FROM imc WHERE idPerfil = :idPerfil ORDER BY id DESC")
     List<IMCEntity> obtenerPorPerfil(int idPerfil);
 
+    @Query("DELETE FROM imc WHERE idPerfil = :idPerfil")
+    void eliminarTodosDePerfil(int idPerfil);
 }

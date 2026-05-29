@@ -11,89 +11,41 @@ public class IMCEntity {
     private int id;
 
     private int idPerfil;
-
+    private int idImcApi;
     private double peso;
-
     private double altura;
-
     private double imc;
-
     private String categoria;
-
     private String fecha;
 
     public IMCEntity() {}
 
     @Ignore
-    public IMCEntity(
-            int idPerfil,
-            double peso,
-            double altura,
-            double imc,
-            String categoria,
-            String fecha
-    ) {
+    public IMCEntity(int idPerfil, int idImcApi, double peso, double altura,
+                     double imc, String categoria, String fecha) {
         this.idPerfil = idPerfil;
-        this.peso = peso;
-        this.altura = altura;
-        this.imc = imc;
+        this.idImcApi = idImcApi;
+        this.peso     = peso;
+        this.altura   = altura;
+        this.imc      = imc;
         this.categoria = categoria;
-        this.fecha = fecha;
+        this.fecha    = fecha;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getIdPerfil() {
-        return idPerfil;
-    }
-
-    public void setIdPerfil(int idPerfil) {
-        this.idPerfil = idPerfil;
-    }
-
-    public double getPeso() {
-        return peso;
-    }
-
-    public void setPeso(double peso) {
-        this.peso = peso;
-    }
-
-    public double getAltura() {
-        return altura;
-    }
-
-    public void setAltura(double altura) {
-        this.altura = altura;
-    }
-
-    public double getImc() {
-        return imc;
-    }
-
-    public void setImc(double imc) {
-        this.imc = imc;
-    }
-
-    public String getCategoria() {
-        return categoria;
-    }
-
-    public void setCategoria(String categoria) {
-        this.categoria = categoria;
-    }
-
-    public String getFecha() {
-        return fecha;
-    }
-
-    public void setFecha(String fecha) {
-        this.fecha = fecha;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+    public int getIdPerfil() { return idPerfil; }
+    public void setIdPerfil(int idPerfil) { this.idPerfil = idPerfil; }
+    public int getIdImcApi() { return idImcApi; }
+    public void setIdImcApi(int idImcApi) { this.idImcApi = idImcApi; }
+    public double getPeso() { return peso; }
+    public void setPeso(double peso) { this.peso = peso; }
+    public double getAltura() { return altura; }
+    public void setAltura(double altura) { this.altura = altura; }
+    public double getImc() { return imc; }
+    public void setImc(double imc) { this.imc = imc; }
+    public String getCategoria() { return categoria; }
+    public void setCategoria(String categoria) { this.categoria = categoria; }
+    public String getFecha() { return fecha; }
+    public void setFecha(String fecha) { this.fecha = fecha; }
 }

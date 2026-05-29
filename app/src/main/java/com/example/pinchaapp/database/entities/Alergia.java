@@ -10,35 +10,25 @@ public class Alergia {
     private int id;
 
     private int idPerfil;
-
+    private int idAlergiaApi;
     private String nombre;
 
-    public Alergia(int idPerfil, String nombre) {
+    public Alergia(int idPerfil, int idAlergiaApi, String nombre) {
         this.idPerfil = idPerfil;
+        this.idAlergiaApi = idAlergiaApi;
         this.nombre = nombre;
     }
 
-    public int getId() {
-        return id;
-    }
+    // Getters y setters
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public int getIdPerfil() { return idPerfil; }
+    public void setIdPerfil(int idPerfil) { this.idPerfil = idPerfil; }
 
-    public int getIdPerfil() {
-        return idPerfil;
-    }
+    public int getIdAlergiaApi() { return idAlergiaApi; }
+    public void setIdAlergiaApi(int idAlergiaApi) { this.idAlergiaApi = idAlergiaApi; }
 
-    public void setIdPerfil(int idPerfil) {
-        this.idPerfil = idPerfil;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
 }
