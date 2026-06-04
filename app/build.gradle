@@ -2,11 +2,11 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+tasks.register('prepareKotlinBuildScriptModel') {}
+
 android {
-    namespace 'com.example.pinchaapp'
-    compileSdk {
-        version = release(36)
-    }
+    namespace = 'com.example.pinchaapp'
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.example.pinchaapp"
@@ -65,4 +65,7 @@ dependencies {
 
    //ubicación del usuario(Localizacion)
     implementation 'com.google.android.gms:play-services-location:21.3.0'
+
+    // WorkManager
+    implementation 'androidx.work:work-runtime:2.9.0'
 }

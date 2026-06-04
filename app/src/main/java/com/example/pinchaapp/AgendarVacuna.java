@@ -1,13 +1,23 @@
 package com.example.pinchaapp;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.example.pinchaapp.dto.HistorialDto;
 import com.example.pinchaapp.dto.MiembroDto;
@@ -15,6 +25,7 @@ import com.example.pinchaapp.dto.RespuestaDto;
 import com.example.pinchaapp.dto.VacunaDto;
 import com.example.pinchaapp.network.ApiClient;
 import com.example.pinchaapp.network.ApiService;
+import com.example.pinchaapp.workers.VacunaReminderWorker;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -24,6 +35,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -38,11 +50,21 @@ public class AgendarVacuna extends AppCompatActivity {
     private int idVacunaSeleccionada = -1;
     private int idCentro = -1;
     private String nombreCentro;
+    private String proximaDosisCalculada = null;
 
     private ApiService api;
     private AutoCompleteTextView etMiembro, etNombre;
     private TextInputEditText etCentroSeleccionado, etDosisNumero, etTotalDosis, etProximaDosis, etObservaciones;
     private Button btnGuardar;
+
+    private final ActivityResultLauncher<String> permisosNotificacion =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+                if (!granted) {
+                    Toast.makeText(this,
+                            "Sin permiso de notificaciones no se mostrarán recordatorios",
+                            Toast.LENGTH_LONG).show();
+                }
+            });
 
     private static class MiembroCombo {
         int id;
@@ -65,6 +87,7 @@ public class AgendarVacuna extends AppCompatActivity {
         setContentView(R.layout.activity_agendar_vacuna);
 
         api = ApiClient.getInstance().create(ApiService.class);
+        solicitarPermisoNotificaciones();
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
@@ -141,7 +164,8 @@ public class AgendarVacuna extends AppCompatActivity {
             idPerfil = seleccionado.id;
             tipoMiembro = seleccionado.tipo;
 
-            idVacunaSeleccionada = -1;
+            idVacunaSeleccionada  = -1;
+            proximaDosisCalculada = null;
             etNombre.setText("");
             etTotalDosis.setText("");
             etProximaDosis.setText("");
@@ -199,8 +223,10 @@ public class AgendarVacuna extends AppCompatActivity {
                         Calendar c = Calendar.getInstance();
                         c.add(Calendar.DAY_OF_YEAR, intervalo);
                         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-                        etProximaDosis.setText(sdf.format(c.getTime()));
+                        proximaDosisCalculada = sdf.format(c.getTime());
+                        etProximaDosis.setText(proximaDosisCalculada);
                     } else {
+                        proximaDosisCalculada = null;
                         etProximaDosis.setText("");
                     }
                     etObservaciones.setText(esquema.getDescripcion() != null ? esquema.getDescripcion() : "");
@@ -257,6 +283,7 @@ public class AgendarVacuna extends AppCompatActivity {
                 btnGuardar.setEnabled(true);
                 if (response.isSuccessful() && response.body() != null && response.body().isExito()) {
                     Toast.makeText(AgendarVacuna.this, "Cita agendada con éxito", Toast.LENGTH_SHORT).show();
+                    programarRecordatorio();
                     setResult(RESULT_OK);
                     finish();
                 } else {
@@ -270,6 +297,54 @@ public class AgendarVacuna extends AppCompatActivity {
                 Toast.makeText(AgendarVacuna.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void solicitarPermisoNotificaciones() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                permisosNotificacion.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+    }
+
+    private void programarRecordatorio() {
+        String fechaStr = proximaDosisCalculada;
+        if (fechaStr == null || fechaStr.isEmpty()) return;
+
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            Date fechaProxima = sdf.parse(fechaStr);
+            if (fechaProxima == null) return;
+
+            // TODO: PRUEBA — disparar inmediatamente. Reemplazar por la línea real antes de producción:
+            // long demora = (fechaProxima.getTime() - TimeUnit.DAYS.toMillis(1)) - System.currentTimeMillis();
+            // if (demora < 0) demora = TimeUnit.MINUTES.toMillis(1);
+            long demora = 0;
+
+            String nombreMiembro = etMiembro.getText() != null
+                    ? etMiembro.getText().toString() : "";
+            String nombreVacuna = etNombre.getText() != null
+                    ? etNombre.getText().toString() : "";
+
+            Data inputData = new Data.Builder()
+                    .putString(VacunaReminderWorker.KEY_MIEMBRO, nombreMiembro)
+                    .putString(VacunaReminderWorker.KEY_VACUNA, nombreVacuna)
+                    .putString(VacunaReminderWorker.KEY_FECHA, fechaStr)
+                    .putInt(VacunaReminderWorker.KEY_ID_PERFIL, idPerfil)
+                    .build();
+
+            OneTimeWorkRequest trabajo = new OneTimeWorkRequest.Builder(VacunaReminderWorker.class)
+                    .setInitialDelay(demora, TimeUnit.MILLISECONDS)
+                    .setInputData(inputData)
+                    .addTag("vacuna_" + idPerfil)
+                    .build();
+
+            WorkManager.getInstance(AgendarVacuna.this).enqueue(trabajo);
+
+        } catch (Exception e) {
+            Log.e("WORKMANAGER", "Error al programar recordatorio: " + e.getMessage());
+        }
     }
 
     private void mostrarDatePicker() {

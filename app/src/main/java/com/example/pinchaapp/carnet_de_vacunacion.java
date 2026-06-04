@@ -128,14 +128,46 @@ public class carnet_de_vacunacion extends AppCompatActivity {
 
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
+            Intent intent = null;
+
             if (id == R.id.nav_pdf) {
-                ejecutarDescargaPdfDirecta();
+                intent = new Intent(this, ExportarPDF.class);
+                intent.putExtra("idPerfil",        idPerfil);
+                intent.putExtra("nombre",          nombrePerfil);
+                intent.putExtra("fechaNacimiento", fechaNacimiento);
+                intent.putExtra("sexo",            sexo);
+                intent.putExtra("tipoPerfil",      tipoPerfil);
+            } else if (id == R.id.nav_proximas_dosis) {
+                intent = new Intent(this, ProximasDosisActivity.class);
+                intent.putExtra("idPerfil", idPerfil);
+                intent.putExtra("nombre",   nombrePerfil);
+            } else if (id == R.id.nav_alergias) {
+                intent = new Intent(this, AlergiasMiembro.class);
+                intent.putExtra("idPerfil",        idPerfil);
+                intent.putExtra("nombre",          nombrePerfil);
+                intent.putExtra("fechaNacimiento", fechaNacimiento);
+                intent.putExtra("sexo",            sexo);
+                intent.putExtra("tipoPerfil",      tipoPerfil);
+            } else if (id == R.id.nav_centros) {
+                intent = new Intent(this, CentrosDeVacunacion.class);
+                intent.putExtra("idPerfil",        idPerfil);
+                intent.putExtra("nombre",          nombrePerfil);
+                intent.putExtra("fechaNacimiento", fechaNacimiento);
+                intent.putExtra("sexo",            sexo);
+            } else if (id == R.id.nav_campanias) {
+                intent = new Intent(this, Campanias.class);
+                intent.putExtra("idPerfil",        idPerfil);
+                intent.putExtra("nombre",          nombrePerfil);
+                intent.putExtra("fechaNacimiento", fechaNacimiento);
+                intent.putExtra("sexo",            sexo);
             } else if (id == R.id.nav_perfiles) {
                 startActivity(new Intent(this, pantalla_dashboard.class));
                 finish();
-            } else {
-                Toast.makeText(this, "Navegando...", Toast.LENGTH_SHORT).show();
+                drawerLayout.closeDrawers();
+                return true;
             }
+
+            if (intent != null) startActivity(intent);
             drawerLayout.closeDrawers();
             return true;
         });
@@ -255,7 +287,8 @@ public class carnet_de_vacunacion extends AppCompatActivity {
             public void onResponse(Call<RespuestaDto<List<ImcDto.ImcResponseDto>>> call,
                                    Response<RespuestaDto<List<ImcDto.ImcResponseDto>>> response) {
                 if (response.isSuccessful()) {
-                    if (response.body() != null && response.body().isExito()) {
+                    if (response.body() != null && response.body().isExito()
+                            && response.body().getData() != null) {
                         listaIMC.clear();
                         listaIMC.addAll(response.body().getData());
 

@@ -2,6 +2,7 @@ package com.example.pinchaapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -203,6 +204,11 @@ public abstract class BasePerfilActivity extends AppCompatActivity {
                 intent.putExtra("nombre",          nombrePerfil);
                 intent.putExtra("fechaNacimiento", fechaNacimiento);
                 intent.putExtra("sexo",            sexo);
+
+            } else if (id == R.id.nav_proximas_dosis) {
+                intent = new Intent(this, ProximasDosisActivity.class);
+                intent.putExtra("idPerfil", idPerfil);
+                intent.putExtra("nombre",   nombrePerfil);
 
             } else if (id == R.id.nav_pdf) {
                 intent = crearIntent(ExportarPDF.class);

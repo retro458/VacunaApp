@@ -84,7 +84,7 @@ public interface ApiService {
     @POST("api/Historial")
     Call<RespuestaDto<Object>> registrarVacunacion(@Body HistorialDto.RegistrarVacunacionDto body);
     @GET("api/historial/proximas-dosis")
-    Call<RespuestaDto<List<HistorialDto>>> getProximasDosis();
+    Call<RespuestaDto<List<HistorialDto.ProximaDosisResponseDto>>> getProximasDosis();
 
     // ==================== RECORDATORIOS ====================
     @GET("api/recordatorios")
@@ -94,7 +94,7 @@ public interface ApiService {
     Call<RespuestaDto<List<RecordatorioDto>>> getRecordatoriosPorEstado(@Query("estado") String estado);
 
     @GET("api/recordatorios/proximos")
-    Call<RespuestaDto<List<RecordatorioDto>>> getProximos(@Query("dias") int dias);
+    Call<RespuestaDto<List<RecordatorioDto.RecordatorioResponseDto>>> getProximos(@Query("dias") int dias);
 
     @GET("api/recordatorios/campanias")
     Call<RespuestaDto<List<RecordatorioDto>>> getCampaniasRecordatorios();

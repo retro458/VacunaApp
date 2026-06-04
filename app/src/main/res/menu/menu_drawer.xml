@@ -38,6 +38,11 @@
         android:icon="@android:drawable/ic_menu_save"/>
 
     <item
+        android:id="@+id/nav_proximas_dosis"
+        android:title="Próximas Dosis"
+        android:icon="@android:drawable/ic_menu_today"/>
+
+    <item
         android:id="@+id/nav_perfiles"
         android:title="Perfiles"
         android:icon="@android:drawable/ic_menu_myplaces"/>

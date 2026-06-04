@@ -124,13 +124,16 @@ public class HistorialDto {
         public ProximaDosisResponseDto() {}
 
         public String getMiembro() { return miembro; }
+        public void setMiembro(String miembro) { this.miembro = miembro; }
         public String getTipoMiembro() { return tipoMiembro; }
         public String getVacuna() { return vacuna; }
+        public void setVacuna(String vacuna) { this.vacuna = vacuna; }
         public int getDosisAplicada() { return dosisAplicada; }
         public void setDosisAplicada(int dosisAplicada) { this.dosisAplicada = dosisAplicada; }
         public String getProximaDosis() { return proximaDosis; }
         public void setProximaDosis(String proximaDosis) { this.proximaDosis = proximaDosis; }
         public Integer getDiasRestantes() { return diasRestantes; }
+        public void setDiasRestantes(Integer diasRestantes) { this.diasRestantes = diasRestantes; }
         public String getRecordatorio() { return recordatorio; }
     }
 
