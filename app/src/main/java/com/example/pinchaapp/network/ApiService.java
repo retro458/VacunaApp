@@ -57,30 +57,32 @@ public interface ApiService {
     @POST("api/miembros")
     Call<RespuestaDto<Object>> crearMiembro(@Body MiembroDto.CrearMiembroDto body);
 
-    // NUEVO: Endpoint PUT para actualizar perfiles que te faltaba
     @PUT("api/miembros/{id}")
     Call<RespuestaDto<Void>> actualizarMiembro(
             @Path("id") int id,
             @Body MiembroDto.ActualizarMiembroDto body
     );
 
+    @DELETE("api/miembros/{id}")
+    Call<RespuestaDto<Object>> eliminarMiembro(@Path("id") int id);
+
     // ==================== VACUNAS ====================
-    @GET("api/vacunas")
-    Call<RespuestaDto<List<VacunaDto>>> getVacunas();
+    // Obtiene la lista utilizando el Response DTO mapeado de C#
+    @GET("api/Vacunas")
+    Call<RespuestaDto<List<VacunaDto.VacunaResponseDto>>> obtenerVacunas(
+            @Query("centroId") int centroId,       // Envía el ID del centro para filtrar stock
+            @Query("tipoMiembro") String tipoMiembro
+    );
 
-    @GET("api/vacunas")
-    Call<RespuestaDto<List<VacunaDto>>> getVacunasPorTipo(@Query("tipo") String tipo);
-
-    @GET("api/vacunas/{id}")
-    Call<RespuestaDto<VacunaDto>> getVacuna(@Path("id") int id);
+    // Obtiene el esquema utilizando el Esquema DTO mapeado de C#
+    @GET("api/EsquemaVacuna/{id}")
+    Call<VacunaDto.EsquemaVacunaDto> obtenerEsquemaVacuna(@Path("id") int idVacuna);
 
     // ==================== HISTORIAL ====================
     @GET("api/historial/{idMiembro}")
-    Call<RespuestaDto<List<HistorialDto>>> getHistorial(@Path("idMiembro") int idMiembro);
-
-    @POST("api/historial")
-    Call<RespuestaDto<Object>> registrarVacunacion(@Body RegistrarVacunacionDto body);
-
+    Call<RespuestaDto<List<HistorialDto.HistorialResponseDto>>> getHistorial(@Path("idMiembro") int idMiembro);
+    @POST("api/Historial")
+    Call<RespuestaDto<Object>> registrarVacunacion(@Body HistorialDto.RegistrarVacunacionDto body);
     @GET("api/historial/proximas-dosis")
     Call<RespuestaDto<List<HistorialDto>>> getProximasDosis();
 

@@ -3,362 +3,285 @@ package com.example.pinchaapp;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
-import android.widget.Spinner;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.pinchaapp.dto.HistorialDto;
+import com.example.pinchaapp.dto.MiembroDto;
+import com.example.pinchaapp.dto.RespuestaDto;
+import com.example.pinchaapp.dto.VacunaDto;
+import com.example.pinchaapp.network.ApiClient;
+import com.example.pinchaapp.network.ApiService;
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import com.example.pinchaapp.database.VacunAppDatabase;
-import com.example.pinchaapp.database.entities.VacunaHistorial;
-import com.example.pinchaapp.dto.VacunaDto;
-import com.example.pinchaapp.dto.RegistrarVacunacionDto;
-import com.example.pinchaapp.dto.CentroDto;
-import com.example.pinchaapp.dto.RespuestaDto;
-import com.example.pinchaapp.network.ApiClient;
-import com.example.pinchaapp.network.ApiService;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-
 public class AgendarVacuna extends AppCompatActivity {
 
-    // ── Vistas ───────────────────────────────────────────────────────
-    private Spinner spVacunas, spCentros, spDosisNumero, spTotalDosis, spMl;
-    private TextInputEditText etFechaAplicacion, etMedico;
-    private MaterialButton btnGuardar, btnCancelar;
+    private final boolean MOCK_OFFLINE = false;
 
-    // ── Datos ────────────────────────────────────────────────────────
-    private int idPerfil;
-    private String fechaNacimiento, sexo, tipoPerfil;
+    private int idPerfil = -1;
+    private String tipoMiembro = "humano";
+    private int idVacunaSeleccionada = -1;
+    private int idCentro = -1;
+    private String nombreCentro;
 
-    // ── API y Room ───────────────────────────────────────────────────
-    private ApiService apiService;
-    private VacunAppDatabase db;
+    private ApiService api;
+    private AutoCompleteTextView etMiembro, etNombre;
+    private TextInputEditText etCentroSeleccionado, etDosisNumero, etTotalDosis, etProximaDosis, etObservaciones;
+    private Button btnGuardar;
 
-    // ── Listas ──────────────────────────────────────────────────────
-    private List<VacunaDto> listaVacunasFiltradas = new ArrayList<>();
-    private List<CentroDto> listaCentros          = new ArrayList<>();
+    private static class MiembroCombo {
+        int id;
+        String nombre;
+        String tipo;
+
+        MiembroCombo(int id, String nombre, String tipo) {
+            this.id = id;
+            this.nombre = nombre;
+            this.tipo = tipo;
+        }
+
+        @Override
+        public String toString() { return nombre; }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agendar_vacuna);
 
-        // Toolbar
+        api = ApiClient.getInstance().create(ApiService.class);
+
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        // Datos del Intent
-        idPerfil        = getIntent().getIntExtra("idPerfil", 0);
-        fechaNacimiento = getIntent().getStringExtra("fechaNacimiento");
-        sexo            = getIntent().getStringExtra("sexo");
-        tipoPerfil      = getIntent().getStringExtra("tipoPerfil");
+        idPerfil = getIntent().getIntExtra("idPerfil", -1);
+        tipoMiembro = getIntent().getStringExtra("tipoMiembro");
+        if (tipoMiembro == null) tipoMiembro = "humano";
 
-        // API y Room
-        apiService = ApiClient.getInstance().create(ApiService.class);
-        db         = VacunAppDatabase.getInstance(this);
+        idCentro = getIntent().getIntExtra("idCentro", -1);
+        nombreCentro = getIntent().getStringExtra("nombreCentro");
 
-        initViews();
-        cargarVacunas();
-        cargarCentros();
-        configurarSpinnersEstaticos();
-    }
+        etCentroSeleccionado = findViewById(R.id.etCentroSeleccionado);
+        etMiembro            = findViewById(R.id.etMiembro);
+        etNombre             = findViewById(R.id.etNombre);
+        etDosisNumero        = findViewById(R.id.etDosisNumero);
+        etTotalDosis         = findViewById(R.id.etTotalDosis);
+        etProximaDosis       = findViewById(R.id.etProximaDosis);
+        etObservaciones      = findViewById(R.id.etObservaciones);
+        btnGuardar           = findViewById(R.id.btnGuardar);
 
-    // ── Vistas ───────────────────────────────────────────────────────
-    private void initViews() {
-        spVacunas        = findViewById(R.id.spVacunas);
-        spCentros        = findViewById(R.id.spCentros);
-        spDosisNumero    = findViewById(R.id.spDosisNumero);
-        spTotalDosis     = findViewById(R.id.spTotalDosis);
-        spMl             = findViewById(R.id.spMl);
-        etFechaAplicacion = findViewById(R.id.etFechaAplicacion);
-        etMedico         = findViewById(R.id.etMedico);
-        btnGuardar       = findViewById(R.id.btnGuardar);
-        btnCancelar      = findViewById(R.id.btnCancelar);
-
-        // DatePicker
-        etFechaAplicacion.setOnClickListener(v -> {
-            Calendar cal = Calendar.getInstance();
-            new DatePickerDialog(this,
-                    (view, year, month, day) -> {
-                        String fecha = String.format(
-                                Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day);
-                        etFechaAplicacion.setText(fecha);
-                    },
-                    cal.get(Calendar.YEAR),
-                    cal.get(Calendar.MONTH),
-                    cal.get(Calendar.DAY_OF_MONTH)
-            ).show();
-        });
-
-        btnGuardar.setOnClickListener(v -> guardarVacuna());
-        btnCancelar.setOnClickListener(v -> finish());
-    }
-
-    // ── Spinners estáticos ───────────────────────────────────────────
-    private void configurarSpinnersEstaticos() {
-        // Dosis número 1-10
-        List<String> dosis = new ArrayList<>();
-        for (int i = 1; i <= 10; i++) dosis.add(String.valueOf(i));
-        spDosisNumero.setAdapter(new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, dosis));
-
-        // Total dosis 1-10 + Dosis Única
-        List<String> totalDosis = new ArrayList<>();
-        totalDosis.add("Dosis Única");
-        for (int i = 1; i <= 10; i++) totalDosis.add(String.valueOf(i));
-        spTotalDosis.setAdapter(new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, totalDosis));
-
-        // ML
-        List<String> ml = new ArrayList<>(Arrays.asList("0.05 ml", "0.5 ml", "1.0 ml"));
-        spMl.setAdapter(new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, ml));
-    }
-
-    // ── Esquemas ─────────────────────────────────────────────────────
-    private String determinarEsquema() {
-        if ("Mascota".equals(tipoPerfil)) return "Esquema Mascota";
-
-        int edadMeses = calcularEdadEnMeses(fechaNacimiento);
-        int edadAnios = edadMeses / 12;
-
-        if (edadMeses == 0)          return "Esquema Recién Nacidos";
-        if (edadMeses <= 2)          return "Esquema Lactante (2 meses)";
-        if (edadMeses <= 4)          return "Esquema Lactante (4 meses)";
-        if (edadMeses <= 6)          return "Esquema Lactante (6 meses)";
-        if (edadMeses <= 12)         return "Esquema Bebé (12 meses)";
-        if (edadMeses <= 15)         return "Esquema Bebé (15 meses)";
-        if (edadMeses <= 18)         return "Esquema Bebé (18 meses)";
-        if (edadAnios <= 4)          return "Esquema Infantil (4 años)";
-        if (edadAnios <= 18) {
-            if ("F".equalsIgnoreCase(sexo) || "Femenino".equalsIgnoreCase(sexo))
-                return "Esquema Niñas (9 – 18 años)";
-            return "Esquema Niños (9 – 18 años)";
+        if (nombreCentro != null && !nombreCentro.isEmpty()) {
+            etCentroSeleccionado.setText(nombreCentro);
+        } else {
+            etCentroSeleccionado.setText("No se seleccionó ningún centro");
         }
-        if (edadAnios >= 60)         return "Esquema Adultos Mayores";
-        if ("F".equalsIgnoreCase(sexo) || "Femenino".equalsIgnoreCase(sexo)) {
-            if (edadAnios <= 45)     return "Esquema Mujeres (19 – 45 años)";
-            return "Esquema Adultos Mayores";
-        }
-        return "Esquema Adultos Mayores";
+
+        cargarMiembrosDelUsuario();
+
+        btnGuardar.setOnClickListener(v -> guardarVacunaAPI());
     }
 
-    private int calcularEdadEnMeses(String fecha) {
-        try {
-            SimpleDateFormat sdf = fecha.contains("/")
-                    ? new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                    : new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            Calendar nac = Calendar.getInstance();
-            nac.setTime(sdf.parse(fecha));
-            Calendar hoy = Calendar.getInstance();
-            int anios = hoy.get(Calendar.YEAR)  - nac.get(Calendar.YEAR);
-            int meses = hoy.get(Calendar.MONTH) - nac.get(Calendar.MONTH);
-            return anios * 12 + meses;
-        } catch (Exception e) { return 0; }
-    }
-
-    // ── Cargar vacunas desde API filtradas por esquema ───────────────
-    private void cargarVacunas() {
-        String tipo = "Mascota".equals(tipoPerfil) ? "mascota" : "humano";
-
-        apiService.getVacunasPorTipo(tipo).enqueue(
-                new Callback<RespuestaDto<List<VacunaDto>>>() {
-                    @Override
-                    public void onResponse(Call<RespuestaDto<List<VacunaDto>>> call,
-                                           Response<RespuestaDto<List<VacunaDto>>> response) {
-
-                        if (response.isSuccessful()
-                                && response.body() != null
-                                && response.body().isExito()) {
-
-                            String esquema = determinarEsquema();
-                            List<VacunaDto> todas = response.body().getData();
-
-                            // Filtrar por esquema — observaciones debe coincidir
-                            listaVacunasFiltradas.clear();
-                            for (VacunaDto v : todas) {
-                                if (v.getObservaciones() != null
-                                        && v.getObservaciones().equalsIgnoreCase(esquema)) {
-                                    listaVacunasFiltradas.add(v);
-                                }
-                            }
-
-                            // Si no hay vacunas del esquema, mostrar todas
-                            if (listaVacunasFiltradas.isEmpty()) {
-                                listaVacunasFiltradas.addAll(todas);
-                            }
-
-                            List<String> nombres = new ArrayList<>();
-                            for (VacunaDto v : listaVacunasFiltradas) {
-                                nombres.add(v.getNombreVacuna());
-                            }
-
-                            runOnUiThread(() -> spVacunas.setAdapter(new ArrayAdapter<>(
-                                    AgendarVacuna.this,
-                                    android.R.layout.simple_spinner_item, nombres)));
-
-                        } else {
-                            Toast.makeText(AgendarVacuna.this,
-                                    "Error cargando vacunas", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<RespuestaDto<List<VacunaDto>>> call, Throwable t) {
-                        Toast.makeText(AgendarVacuna.this,
-                                "Sin conexión", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    // ── Cargar centros desde API ──────────────────────────────────────
-    private void cargarCentros() {
-        apiService.getCentros().enqueue(new Callback<RespuestaDto<List<CentroDto>>>() {
+    private void cargarMiembrosDelUsuario() {
+        api.getMiembros().enqueue(new Callback<RespuestaDto<List<MiembroDto.MiembroResponseDto>>>() {
             @Override
-            public void onResponse(Call<RespuestaDto<List<CentroDto>>> call,
-                                   Response<RespuestaDto<List<CentroDto>>> response) {
+            public void onResponse(Call<RespuestaDto<List<MiembroDto.MiembroResponseDto>>> call,
+                                   Response<RespuestaDto<List<MiembroDto.MiembroResponseDto>>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isExito()) {
+                    List<MiembroCombo> listaCombo = new ArrayList<>();
 
-                if (response.isSuccessful()
-                        && response.body() != null
-                        && response.body().isExito()) {
-
-                    listaCentros = response.body().getData();
-                    List<String> nombres = new ArrayList<>();
-                    for (CentroDto c : listaCentros) nombres.add(c.getNombre());
-
-                    runOnUiThread(() -> spCentros.setAdapter(new ArrayAdapter<>(
-                            AgendarVacuna.this,
-                            android.R.layout.simple_spinner_item, nombres)));
+                    for (MiembroDto.MiembroResponseDto m : response.body().getData()) {
+                        String tipo = (m.getTipo() != null && m.getTipo().equalsIgnoreCase("mascota")) ? "animal" : "humano";
+                        listaCombo.add(new MiembroCombo(m.getId(), m.getNombre(), tipo));
+                    }
+                    configurarDropdownMiembros(listaCombo);
+                } else {
+                    Toast.makeText(AgendarVacuna.this, "Error al traer miembros de la familia", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<RespuestaDto<List<CentroDto>>> call, Throwable t) {
-                Toast.makeText(AgendarVacuna.this,
-                        "Sin conexión al cargar centros", Toast.LENGTH_SHORT).show();
+            public void onFailure(Call<RespuestaDto<List<MiembroDto.MiembroResponseDto>>> call, Throwable t) {
+                Toast.makeText(AgendarVacuna.this, "Error de red al cargar miembros: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    // ── Guardar: API + Room ──────────────────────────────────────────
-    private void guardarVacuna() {
-        // Validaciones
-        if (listaVacunasFiltradas.isEmpty()) {
-            Toast.makeText(this, "No hay vacunas disponibles", Toast.LENGTH_SHORT).show();
+    private void configurarDropdownMiembros(List<MiembroCombo> lista) {
+        ArrayAdapter<MiembroCombo> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, lista);
+        etMiembro.setAdapter(adapter);
+
+        if (idPerfil != -1) {
+            for (MiembroCombo m : lista) {
+                if (m.id == idPerfil) {
+                    etMiembro.setText(m.nombre, false);
+                    tipoMiembro = m.tipo;
+                    cargarCatalogoVacunas();
+                    break;
+                }
+            }
+        }
+
+        etMiembro.setOnItemClickListener((parent, view, position, id) -> {
+            MiembroCombo seleccionado = (MiembroCombo) parent.getItemAtPosition(position);
+            idPerfil = seleccionado.id;
+            tipoMiembro = seleccionado.tipo;
+
+            idVacunaSeleccionada = -1;
+            etNombre.setText("");
+            etTotalDosis.setText("");
+            etProximaDosis.setText("");
+            etObservaciones.setText("");
+
+            cargarCatalogoVacunas();
+        });
+    }
+
+    private void cargarCatalogoVacunas() {
+        if (idPerfil == -1) return;
+
+        api.obtenerVacunas(idCentro, tipoMiembro).enqueue(new Callback<RespuestaDto<List<VacunaDto.VacunaResponseDto>>>() {
+            @Override
+            public void onResponse(Call<RespuestaDto<List<VacunaDto.VacunaResponseDto>>> call,
+                                   Response<RespuestaDto<List<VacunaDto.VacunaResponseDto>>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isExito()) {
+                    configurarDropdownVacunas(response.body().getData());
+                } else {
+                    Toast.makeText(AgendarVacuna.this, "Sin stock o vacunas disponibles para este perfil", Toast.LENGTH_SHORT).show();
+                    etNombre.setAdapter(null);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RespuestaDto<List<VacunaDto.VacunaResponseDto>>> call, Throwable t) {
+                Toast.makeText(AgendarVacuna.this, "Error de comunicación con el catálogo de vacunas", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void configurarDropdownVacunas(List<VacunaDto.VacunaResponseDto> listaVacunas) {
+        ArrayAdapter<VacunaDto.VacunaResponseDto> adapter = new ArrayAdapter<>(
+                AgendarVacuna.this, android.R.layout.simple_dropdown_item_1line, listaVacunas);
+        etNombre.setAdapter(adapter);
+
+        etNombre.setOnItemClickListener((parent, view, position, id) -> {
+            VacunaDto.VacunaResponseDto seleccionada = (VacunaDto.VacunaResponseDto) parent.getItemAtPosition(position);
+            idVacunaSeleccionada = seleccionada.getId();
+            cargarEsquemaDeVacuna(seleccionada.getId());
+        });
+    }
+
+    private void cargarEsquemaDeVacuna(int idVacuna) {
+        api.obtenerEsquemaVacuna(idVacuna).enqueue(new Callback<VacunaDto.EsquemaVacunaDto>() {
+            @Override
+            public void onResponse(Call<VacunaDto.EsquemaVacunaDto> call,
+                                   Response<VacunaDto.EsquemaVacunaDto> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    VacunaDto.EsquemaVacunaDto esquema = response.body();
+                    etTotalDosis.setText(String.valueOf(esquema.getNumeroDosis()));
+
+                    Integer intervalo = esquema.getIntervaloDias();
+                    if (intervalo != null && intervalo > 0) {
+                        Calendar c = Calendar.getInstance();
+                        c.add(Calendar.DAY_OF_YEAR, intervalo);
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                        etProximaDosis.setText(sdf.format(c.getTime()));
+                    } else {
+                        etProximaDosis.setText("");
+                    }
+                    etObservaciones.setText(esquema.getDescripcion() != null ? esquema.getDescripcion() : "");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<VacunaDto.EsquemaVacunaDto> call, Throwable t) {
+                // Falla silenciosa
+            }
+        });
+    }
+
+    private void guardarVacunaAPI() {
+        String dosisStr = etDosisNumero.getText().toString().trim();
+        String observaciones = etObservaciones.getText().toString().trim();
+
+        if (idPerfil == -1) {
+            etMiembro.setError("Selecciona el paciente");
             return;
         }
-        if (listaCentros.isEmpty()) {
-            Toast.makeText(this, "No hay centros disponibles", Toast.LENGTH_SHORT).show();
+        if (idVacunaSeleccionada == -1) {
+            etNombre.setError("Selecciona una vacuna");
             return;
         }
-        String fecha = etFechaAplicacion.getText().toString().trim();
-        if (fecha.isEmpty()) {
-            etFechaAplicacion.setError("Seleccioná una fecha");
-            return;
-        }
-        String medico = etMedico.getText().toString().trim();
-        if (medico.isEmpty()) {
-            etMedico.setError("Ingresá el nombre del médico");
+        if (dosisStr.isEmpty()) {
+            etDosisNumero.setError("Ingresa la dosis actual");
             return;
         }
 
-        // Datos seleccionados
-        VacunaDto vacunaSeleccionada = listaVacunasFiltradas.get(spVacunas.getSelectedItemPosition());
-        CentroDto centroSeleccionado = listaCentros.get(spCentros.getSelectedItemPosition());
-        int dosisNumero              = spDosisNumero.getSelectedItemPosition() + 1;
-        String lote                  = spTotalDosis.getSelectedItem().toString(); // total dosis → lote
-        String ml                    = spMl.getSelectedItem().toString();         // ml → observaciones
+        HistorialDto.RegistrarVacunacionDto requestDto = new HistorialDto.RegistrarVacunacionDto();
+        requestDto.setIdMiembro(idPerfil);
+        requestDto.setIdVacuna(idVacunaSeleccionada);
+        requestDto.setDosisNumero(Integer.parseInt(dosisStr));
+        requestDto.setObservaciones(observaciones.isEmpty() ? null : observaciones);
+        requestDto.setIdCentro(idCentro != -1 ? idCentro : null);
+        requestDto.setLote("LOTE-SISTEMA");
+        requestDto.setNombreMedico("Asignado de Catálogo");
 
-        RegistrarVacunacionDto request = new RegistrarVacunacionDto(
-                idPerfil,
-                vacunaSeleccionada.getId(),
-                centroSeleccionado.getIdCentro(),
-                fecha,
-                dosisNumero,
-                lote,
-                medico,
-                ml
-        );
+        try {
+            SimpleDateFormat formatoISO = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault());
+            requestDto.setFechaAplicacion(formatoISO.format(new Date()));
+        } catch (Exception e) {
+            Toast.makeText(this, "Formato de fecha inválido", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         btnGuardar.setEnabled(false);
 
-        apiService.registrarVacunacion(request).enqueue(new Callback<RespuestaDto<Object>>() {
+        api.registrarVacunacion(requestDto).enqueue(new Callback<RespuestaDto<Object>>() {
             @Override
             public void onResponse(Call<RespuestaDto<Object>> call,
                                    Response<RespuestaDto<Object>> response) {
-
-                if (response.isSuccessful()
-                        && response.body() != null
-                        && response.body().isExito()) {
-
-                    // Guardar en Room también
-                    VacunaHistorial historial = new VacunaHistorial(
-                            idPerfil,
-                            vacunaSeleccionada.getId(),
-                            centroSeleccionado.getIdCentro(),
-                            vacunaSeleccionada.getNombreVacuna(),
-                            centroSeleccionado.getNombre(),
-                            fecha, dosisNumero, lote, medico, ml
-                    );
-
-                    new Thread(() -> {
-                        db.vacunaDao().insertarHistorial(historial);
-                        runOnUiThread(() -> {
-                            Toast.makeText(AgendarVacuna.this,
-                                    "Vacuna registrada", Toast.LENGTH_SHORT).show();
-                            setResult(RESULT_OK);
-                            finish();
-                        });
-                    }).start();
-
+                btnGuardar.setEnabled(true);
+                if (response.isSuccessful() && response.body() != null && response.body().isExito()) {
+                    Toast.makeText(AgendarVacuna.this, "Cita agendada con éxito", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_OK);
+                    finish();
                 } else {
-                    try {
-                        String error = response.errorBody().string();
-                        Toast.makeText(AgendarVacuna.this,
-                                "Error: " + error, Toast.LENGTH_LONG).show();
-                    } catch (Exception e) {
-                        Toast.makeText(AgendarVacuna.this,
-                                "No se pudo registrar", Toast.LENGTH_SHORT).show();
-                    }
-                    btnGuardar.setEnabled(true);
+                    Toast.makeText(AgendarVacuna.this, "Error: " + response.body().getMensaje(), Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<RespuestaDto<Object>> call, Throwable t) {
-                // Sin internet → guardar solo local
-                VacunaHistorial historial = new VacunaHistorial(
-                        idPerfil,
-                        vacunaSeleccionada.getId(),
-                        centroSeleccionado.getIdCentro(),
-                        vacunaSeleccionada.getNombreVacuna(),
-                        centroSeleccionado.getNombre(),
-                        fecha, dosisNumero, lote, medico, ml
-                );
-
-                new Thread(() -> {
-                    db.vacunaDao().insertarHistorial(historial);
-                    runOnUiThread(() -> {
-                        Toast.makeText(AgendarVacuna.this,
-                                "Sin conexión — guardado localmente",
-                                Toast.LENGTH_SHORT).show();
-                        setResult(RESULT_OK);
-                        finish();
-                    });
-                }).start();
+                btnGuardar.setEnabled(true);
+                Toast.makeText(AgendarVacuna.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void mostrarDatePicker() {
+        Calendar calendario = Calendar.getInstance();
+        new DatePickerDialog(this,
+                (view, year, month, day) -> {
+                    String fecha = String.format(Locale.getDefault(), "%02d/%02d/%04d", day, month + 1, year);
+                    etProximaDosis.setText(fecha);
+                },
+                calendario.get(Calendar.YEAR),
+                calendario.get(Calendar.MONTH),
+                calendario.get(Calendar.DAY_OF_MONTH)
+        ).show();
     }
 }

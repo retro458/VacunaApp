@@ -13,7 +13,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.pinchaapp.R;
-import com.example.pinchaapp.dto.VacunaDto;
+import com.example.pinchaapp.dto.HistorialDto; // Cambiado para apuntar al DTO correcto
 
 import java.util.List;
 import java.util.Calendar;
@@ -22,15 +22,15 @@ import java.util.Locale;
 public class VacunaAdapter extends RecyclerView.Adapter<VacunaAdapter.ViewHolder> {
 
     private Context context;
-    private List<VacunaDto> lista;
+    private List<HistorialDto.VacunaHistorialDto> lista; // Actualizado con el nuevo DTO
     private OnVacunaActualizadaListener listener;
 
-    // Interface para notificar al Activity cuando se marca aplicada
+    // Interfaz para notificar al Activity cuando se marca aplicada
     public interface OnVacunaActualizadaListener {
         void onMarcadaAplicada(int idHistorial, String fecha);
     }
 
-    public VacunaAdapter(Context context, List<VacunaDto> lista,
+    public VacunaAdapter(Context context, List<HistorialDto.VacunaHistorialDto> lista,
                          OnVacunaActualizadaListener listener) {
         this.context = context;
         this.lista = lista;
@@ -47,7 +47,7 @@ public class VacunaAdapter extends RecyclerView.Adapter<VacunaAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        VacunaDto vacuna = lista.get(position);
+        HistorialDto.VacunaHistorialDto vacuna = lista.get(position);
 
         holder.txtNombreVacuna.setText(vacuna.getNombreVacuna());
         holder.txtDosis.setText("Dosis " + vacuna.getDosisNumero()
@@ -70,7 +70,7 @@ public class VacunaAdapter extends RecyclerView.Adapter<VacunaAdapter.ViewHolder
                     android.R.drawable.checkbox_off_background);
         }
 
-        // CLICK — abrir dialog para marcar aplicada
+        // CLICK — abrir diálogo para marcar como aplicada
         holder.itemView.setOnClickListener(v -> {
             if (!vacuna.isAplicada()) {
                 mostrarDialogAplicar(vacuna, position);
@@ -78,8 +78,7 @@ public class VacunaAdapter extends RecyclerView.Adapter<VacunaAdapter.ViewHolder
         });
     }
 
-    private void mostrarDialogAplicar(VacunaDto vacuna, int position) {
-
+    private void mostrarDialogAplicar(HistorialDto.VacunaHistorialDto vacuna, int position) {
         // DatePicker para elegir fecha
         Calendar calendario = Calendar.getInstance();
 
@@ -90,12 +89,12 @@ public class VacunaAdapter extends RecyclerView.Adapter<VacunaAdapter.ViewHolder
                             Locale.getDefault(),
                             "%02d/%02d/%04d", day, month + 1, year);
 
-                    // Notificar al Activity
+                    // Notificar al Activity principal
                     if (listener != null) {
                         listener.onMarcadaAplicada(vacuna.getId(), fecha);
                     }
 
-                    // Actualizar en la lista localmente
+                    // Actualizar en la lista localmente para refrescar la UI al instante
                     lista.get(position).setAplicada(true);
                     lista.get(position).setFechaAplicacion(fecha);
                     notifyItemChanged(position);

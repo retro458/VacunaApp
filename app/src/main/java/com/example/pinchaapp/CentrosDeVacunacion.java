@@ -2,200 +2,178 @@ package com.example.pinchaapp;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.cardview.widget.CardView;
 
-import com.example.pinchaapp.adapters.CentroAdapter;
-import com.example.pinchaapp.database.VacunAppDatabase;
 import com.example.pinchaapp.dto.CentroDto;
 import com.example.pinchaapp.dto.RespuestaDto;
 import com.example.pinchaapp.network.ApiClient;
 import com.example.pinchaapp.network.ApiService;
 import com.example.pinchaapp.util.UbicacionHelper;
-import java.util.ArrayList;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.appbar.MaterialToolbar;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class CentrosDeVacunacion extends BasePerfilActivity {
+public class CentrosDeVacunacion extends AppCompatActivity implements OnMapReadyCallback {
 
-    VacunAppDatabase db;
+    private GoogleMap mMap;
+    private MaterialToolbar toolbar;
+    private TextView txtEstadoCentros;
+    private CardView cardEstado;
 
-    // =========================
-    // GEOLOCALIZACIÓN - CAMPOS
-    // =========================
-    RecyclerView recyclerCentros;
-    TextView txtEstadoCentros;
-    CentroAdapter centroAdapter;
-    List<CentroDto> listaCentros = new ArrayList<>();
-    private static final double RADIO_KM = 10.0; // radio de búsqueda
+    private int idPerfil;
+    private static final double RADIO_KM = 50.0;
 
-    @Override
-    protected int getLayoutId()      { return R.layout.activity_centros_de_vacunacion; }
+    private Map<Marker, CentroDto> markerCentroMap = new HashMap<>();
 
     @Override
-    protected int getNavItemActivo() { return R.id.nav_centros; }
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_centros_de_vacunacion);
 
-    @Override
-    protected void onPerfilReady() {
-
-        // =========================
-        // BASE DE DATOS Y BOTONES
-        // =========================
-        db = VacunAppDatabase.getInstance(this);
-
-        // =========================
-        // GEOLOCALIZACIÓN - CENTROS
-        // =========================
-        recyclerCentros  = findViewById(R.id.recyclerCentros);
+        toolbar = findViewById(R.id.toolbar);
         txtEstadoCentros = findViewById(R.id.txtEstadoCentros);
+        cardEstado = findViewById(R.id.cardEstado);
 
-        recyclerCentros.setLayoutManager(new LinearLayoutManager(this));
-        centroAdapter = new CentroAdapter(listaCentros, this::abrirEnMapa);
-        recyclerCentros.setAdapter(centroAdapter);
+        toolbar.setNavigationOnClickListener(v -> finish());
 
-        iniciarBusquedaCentros();
+        idPerfil = getIntent().getIntExtra("idPerfil", 0);
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
     }
 
-    // =========================
-    // GEOLOCALIZACIÓN - MÉTODOS
-    // =========================
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        mMap = googleMap;
 
-    // Verifica permiso y arranca la búsqueda
-    private void iniciarBusquedaCentros() {
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.getUiSettings().setCompassEnabled(true);
+
+        mMap.setOnInfoWindowClickListener(marker -> {
+            CentroDto centroSeleccionado = markerCentroMap.get(marker);
+            if (centroSeleccionado != null) {
+                Intent intent = new Intent(this, AgendarVacuna.class);
+                intent.putExtra("idPerfil", idPerfil);
+                intent.putExtra("idCentro", centroSeleccionado.getId());
+                intent.putExtra("nombreCentro", centroSeleccionado.getNombre());
+                startActivity(intent);
+            }
+        });
+
+        comprobarPermisosYUbicacion();
+    }
+
+    private void comprobarPermisosYUbicacion() {
         if (UbicacionHelper.tienePermiso(this)) {
-            obtenerUbicacionYBuscar();
+            obtenerCoordenadasDispositivo();
         } else {
             UbicacionHelper.pedirPermiso(this);
         }
     }
 
-    // Obtiene ubicación GPS y consulta centros cercanos
-    private void obtenerUbicacionYBuscar() {
-        txtEstadoCentros.setText("Obteniendo tu ubicación...");
+    private void obtenerCoordenadasDispositivo() {
+        cardEstado.setVisibility(android.view.View.VISIBLE);
+        txtEstadoCentros.setText("Obteniendo coordenadas GPS...");
+
+        try {
+            mMap.setMyLocationEnabled(true);
+        } catch (SecurityException ignored) {}
 
         UbicacionHelper.obtenerUbicacion(this, new UbicacionHelper.UbicacionCallback() {
             @Override
             public void onUbicacionObtenida(double latitud, double longitud) {
-                cargarCentrosCercanos(latitud, longitud);
+                LatLng miUbicacion = new LatLng(latitud, longitud);
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(miUbicacion, 13f));
+                buscarCentrosEnServidor(latitud, longitud);
             }
 
             @Override
             public void onError(String mensaje) {
-                txtEstadoCentros.setText(mensaje);
-                // Plan B: si falla el GPS, mostramos todos los centros sin distancia
-                cargarTodosLosCentros();
+                txtEstadoCentros.setText("Error GPS: " + mensaje + ". Cargando mapa base.");
+                cardEstado.postDelayed(() -> cardEstado.setVisibility(android.view.View.GONE), 3000);
             }
         });
     }
 
-    // Llama al endpoint /api/centros/cercanos
-    private void cargarCentrosCercanos(double lat, double lng) {
-        txtEstadoCentros.setText("Buscando centros cercanos...");
-
+    private void buscarCentrosEnServidor(double lat, double lng) {
+        txtEstadoCentros.setText("Buscando centros de vacunación cercanos...");
         ApiService api = ApiClient.getInstance().create(ApiService.class);
-        api.getCentrosCercanos(lat, lng, RADIO_KM).enqueue(
-                new Callback<RespuestaDto<List<CentroDto>>>() {
-                    @Override
-                    public void onResponse(@NonNull Call<RespuestaDto<List<CentroDto>>> call,
-                                           @NonNull Response<RespuestaDto<List<CentroDto>>> response) {
-                        if (response.isSuccessful() && response.body() != null
-                                && response.body().isExito()
-                                && response.body().getData() != null) {
-                            mostrarCentros(response.body().getData());
-                        } else {
-                            String msg = (response.body() != null)
-                                    ? response.body().getMensaje()
-                                    : "No se encontraron centros cercanos";
-                            txtEstadoCentros.setText(msg);
-                        }
-                    }
 
-                    @Override
-                    public void onFailure(@NonNull Call<RespuestaDto<List<CentroDto>>> call,
-                                          @NonNull Throwable t) {
-                        txtEstadoCentros.setText("Error de conexión: " + t.getMessage());
-                    }
-                });
-    }
-
-    // Plan B: lista todos los centros (sin filtrar por distancia)
-    private void cargarTodosLosCentros() {
-        ApiService api = ApiClient.getInstance().create(ApiService.class);
-        api.getCentros().enqueue(new Callback<RespuestaDto<List<CentroDto>>>() {
+        api.getCentrosCercanos(lat, lng, RADIO_KM).enqueue(new Callback<RespuestaDto<List<CentroDto>>>() {
             @Override
             public void onResponse(@NonNull Call<RespuestaDto<List<CentroDto>>> call,
                                    @NonNull Response<RespuestaDto<List<CentroDto>>> response) {
-                if (response.isSuccessful() && response.body() != null
-                        && response.body().isExito()
-                        && response.body().getData() != null) {
-                    mostrarCentros(response.body().getData());
+                cardEstado.setVisibility(android.view.View.GONE);
+
+                if (response.isSuccessful() && response.body() != null && response.body().isExito()) {
+                    pintarCentrosEnMapa(response.body().getData());
+                } else {
+                    android.widget.Toast.makeText(CentrosDeVacunacion.this, "Sin centros en el rango de cobertura.", android.widget.Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<RespuestaDto<List<CentroDto>>> call,
-                                  @NonNull Throwable t) {
-                txtEstadoCentros.setText("Error de conexión: " + t.getMessage());
+            public void onFailure(@NonNull Call<RespuestaDto<List<CentroDto>>> call, @NonNull Throwable t) {
+                txtEstadoCentros.setText("Falla de red: " + t.getMessage());
             }
         });
     }
 
-    // Refresca la lista en pantalla
-    private void mostrarCentros(List<CentroDto> centros) {
-        listaCentros.clear();
-        listaCentros.addAll(centros);
-        centroAdapter.notifyDataSetChanged();
+    private void pintarCentrosEnMapa(List<CentroDto> centros) {
+        if (centros == null || centros.isEmpty()) return;
 
-        if (listaCentros.isEmpty()) {
-            txtEstadoCentros.setText("No hay centros disponibles");
-        } else {
-            txtEstadoCentros.setText("");
+        mMap.clear();
+        markerCentroMap.clear();
+
+        for (CentroDto centro : centros) {
+            if (centro.getLatitud() == null || centro.getLongitud() == null) continue;
+
+            LatLng posicion = new LatLng(centro.getLatitud().doubleValue(), centro.getLongitud().doubleValue());
+
+            MarkerOptions opcionesMarcador = new MarkerOptions()
+                    .position(posicion)
+                    .title(centro.getNombre())
+                    .snippet("Horario: " + centro.getHorario() + " | Toca aquí para ver vacunas")
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+
+            Marker marker = mMap.addMarker(opcionesMarcador);
+            markerCentroMap.put(marker, centro);
         }
     }
 
-    // Abre el centro seleccionado en Google Maps
-    private void abrirEnMapa(CentroDto centro) {
-        Uri uri = Uri.parse("geo:" + centro.getLatitud() + "," + centro.getLongitud()
-                + "?q=" + centro.getLatitud() + "," + centro.getLongitud()
-                + "(" + Uri.encode(centro.getNombre()) + ")");
-
-        Intent mapaIntent = new Intent(Intent.ACTION_VIEW, uri);
-        mapaIntent.setPackage("com.google.android.apps.maps");
-
-        if (mapaIntent.resolveActivity(getPackageManager()) != null) {
-            startActivity(mapaIntent);
-        } else {
-            // Si no tiene Google Maps, abre en navegador
-            startActivity(new Intent(Intent.ACTION_VIEW, uri));
-        }
-    }
-
-    // Respuesta del usuario al diálogo de permiso
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == UbicacionHelper.REQUEST_PERMISO_UBICACION) {
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                obtenerUbicacionYBuscar();
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                obtenerCoordenadasDispositivo();
             } else {
-                txtEstadoCentros.setText(
-                        "Sin permiso de ubicación. Mostrando todos los centros.");
-                cargarTodosLosCentros();
+                txtEstadoCentros.setText("Permiso denegado. No se pueden mapear centros cercanos.");
             }
         }
     }
-
 }

@@ -57,12 +57,15 @@ public class pantalla_dashboard extends AppCompatActivity {
         rvPerfiles = findViewById(R.id.rvPerfiles);
         btnCrearPerfil = findViewById(R.id.btnCrearPerfil);
         btnLogout = findViewById(R.id.btnLogout);
-
+        com.google.android.material.card.MaterialCardView cardCampanias = findViewById(R.id.cardCampanias);
         rvPerfiles.setLayoutManager(new LinearLayoutManager(this));
         api = ApiClient.getInstance().create(ApiService.class);
 
         cargarPerfilesAPI();
-
+        cardCampanias.setOnClickListener(v -> {
+            Intent intent = new Intent(pantalla_dashboard.this, CentrosDeVacunacion.class);
+            startActivity(intent);
+        });
         // ==========================================
         // MENÚ FLOTANTE PARA CREAR (INTACTO)
         // ==========================================
@@ -135,7 +138,12 @@ public class pantalla_dashboard extends AppCompatActivity {
                     List<MiembroResponseDto> listaAPI = response.body().getData();
                     configurarAdaptador(listaAPI);
                 } else {
-                    Toast.makeText(pantalla_dashboard.this, "Error al cargar perfiles", Toast.LENGTH_SHORT).show();
+                    // AQUÍ ATRAPAMOS EL 401
+                    if (response.code() == 401) {
+                        cerrarSesionPorToken();
+                    } else {
+                        Toast.makeText(pantalla_dashboard.this, "Error al cargar perfiles", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
 
@@ -190,7 +198,8 @@ public class pantalla_dashboard extends AppCompatActivity {
                         }
 
                         @Override
-                        public void onNothingSelected(AdapterView<?> parent) {}
+                        public void onNothingSelected(AdapterView<?> parent) {
+                        }
                     });
                 } else {
                     String[] opciones = {"Perro", "Gato"};
@@ -263,7 +272,13 @@ public class pantalla_dashboard extends AppCompatActivity {
                                     dialog.dismiss();
                                     cargarPerfilesAPI();
                                 } else {
-                                    Toast.makeText(pantalla_dashboard.this, "Error de servidor al actualizar", Toast.LENGTH_SHORT).show();
+                                    // AQUÍ ATRAPAMOS EL 401
+                                    if (response.code() == 401) {
+                                        dialog.dismiss(); // Ocultamos el cuadro de diálogo
+                                        cerrarSesionPorToken();
+                                    } else {
+                                        Toast.makeText(pantalla_dashboard.this, "Error de servidor al actualizar", Toast.LENGTH_SHORT).show();
+                                    }
                                 }
                             }
 
@@ -281,15 +296,53 @@ public class pantalla_dashboard extends AppCompatActivity {
             public void onEliminar(MiembroResponseDto perfil, int position) {
                 new AlertDialog.Builder(pantalla_dashboard.this)
                         .setTitle("Eliminar perfil")
-                        .setMessage("¿Seguro que deseas eliminar este perfil?")
+                        .setMessage("¿Seguro que deseas eliminar a " + perfil.getNombre() + "? Esta acción no se puede deshacer.")
                         .setPositiveButton("Eliminar", (dialog, which) -> {
-                            Toast.makeText(pantalla_dashboard.this, "Endpoint DELETE no definido en ApiService aún", Toast.LENGTH_SHORT).show();
-                            adapter.eliminarItem(position);
+
+                            // DISPARAR LA LLAMADA AL ENDPOINT DELETE EN C#
+                            api.eliminarMiembro(perfil.getId()).enqueue(new Callback<RespuestaDto<Object>>() {
+                                @Override
+                                public void onResponse(Call<RespuestaDto<Object>> call, Response<RespuestaDto<Object>> response) {
+                                    if (response.isSuccessful() && response.body() != null && response.body().isExito()) {
+                                        Toast.makeText(pantalla_dashboard.this, "Perfil eliminado con éxito", Toast.LENGTH_SHORT).show();
+                                        cargarPerfilesAPI();
+                                    } else {
+                                        // AQUÍ ATRAPAMOS EL 401
+                                        if (response.code() == 401) {
+                                            cerrarSesionPorToken();
+                                        } else {
+                                            Toast.makeText(pantalla_dashboard.this, "Error del servidor al eliminar", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<RespuestaDto<Object>> call, Throwable t) {
+                                    Toast.makeText(pantalla_dashboard.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
                         })
                         .setNegativeButton("Cancelar", null)
                         .show();
             }
         });
         rvPerfiles.setAdapter(adapter);
+    }
+    // ==========================================
+    // MANEJO DE SESIÓN VENCIDA (401)
+    // ==========================================
+    private void cerrarSesionPorToken() {
+        Toast.makeText(this, "Sesión vencida. Por favor, inicia sesión nuevamente.", Toast.LENGTH_LONG).show();
+
+        // Limpiamos los datos
+        SessionManager.cerrarSesion();
+        getSharedPreferences("user", MODE_PRIVATE).edit().clear().apply();
+        getSharedPreferences("AUTH_PREFS", MODE_PRIVATE).edit().clear().apply();
+
+        // Redirigimos al Login matando el historial de pantallas
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 }

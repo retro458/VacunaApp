@@ -47,6 +47,9 @@ dependencies {
     //PieCharts
     implementation 'com.github.PhilJay:MPAndroidChart:3.1.0'
 
+    //SDK GOOGLE MAPS
+    implementation 'com.google.android.gms:play-services-maps:19.0.0'
+
     //Autenticacion
     implementation 'com.google.android.gms:play-services-auth:21.2.0'
 

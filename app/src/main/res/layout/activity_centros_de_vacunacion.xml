@@ -1,157 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<androidx.drawerlayout.widget.DrawerLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:fitsSystemWindows="true">
 
-    <!-- CONTENIDO DISEÑO -->
-    <androidx.core.widget.NestedScrollView
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#F8F8F8"
-        android:fillViewport="true">
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/skyblue"
+        app:title="Centros de Vacunación"
+        app:titleTextColor="@android:color/white"
+        app:navigationIcon="@android:drawable/ic_menu_revert"/> <fragment
+    android:id="@+id/map"
+    android:name="com.google.android.gms.maps.SupportMapFragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_below="@id/toolbar"/>
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <!-- TOOLBAR -->
-            <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/toolbar"
-                android:layout_width="0dp"
-                android:layout_height="70dp"
-                android:background="#42C4F7"
-                app:title="Centros De Vacunación"
-                android:fontFamily="cursive"
-                app:titleTextColor="@android:color/white"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
-
-
-            <!-- CARD PERFIL -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardPerfil"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="4dp"
-                app:layout_constraintTop_toBottomOf="@id/toolbar"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/txtNombre"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Daniela Fernanda Morales Corea"
-                        android:textColor="@color/blue_dark"
-                        android:textStyle="bold"
-                        android:textSize="16sp"/>
-
-                    <TextView
-                        android:id="@+id/txtEdad"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="21 años y 4 meses"
-                        android:textColor="#B0B0B0"
-                        android:textSize="13sp"
-                        android:layout_marginTop="4dp"/>
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- TÍTULO SECCIÓN -->
-            <TextView
-                android:id="@+id/txtTituloCentros"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="4dp"
-                android:text="Centros cercanos"
-                android:textColor="@color/blue_dark"
-                android:textStyle="bold"
-                android:textSize="15sp"
-                app:layout_constraintTop_toBottomOf="@id/cardPerfil"
-                app:layout_constraintStart_toStartOf="parent"/>
-
-            <!-- LISTA DE CENTROS -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerCentros"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:paddingHorizontal="16dp"
-                android:clipToPadding="false"
-                android:nestedScrollingEnabled="false"
-                app:layout_constraintTop_toBottomOf="@id/txtTituloCentros"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
-
-            <!-- BLOQUE DE ESTADO (cargando / vacío / error) -->
-            <LinearLayout
-                android:id="@+id/layoutEstadoCentros"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:padding="32dp"
-                android:layout_marginTop="40dp"
-                app:layout_constraintTop_toBottomOf="@id/txtTituloCentros"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
-
-                <ProgressBar
-                    android:id="@+id/progressCentros"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="14dp"/>
-
-                <ImageView
-                    android:id="@+id/iconoEstadoCentros"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:src="@android:drawable/ic_dialog_map"
-                    android:alpha="0.35"
-                    android:visibility="gone"/>
-
-                <TextView
-                    android:id="@+id/txtEstadoCentros"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="Buscando centros cercanos..."
-                    android:textColor="#B0B0B0"
-                    android:textSize="14sp"
-                    android:gravity="center"/>
-
-            </LinearLayout>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.core.widget.NestedScrollView>
-
-    <!-- MENU HAMBURGUESA -->
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/navigationView"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardEstado"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        app:menu="@menu/menu_drawer"
-        app:headerLayout="@layout/header_drawer"/>
+        android:layout_height="wrap_content"
+        android:layout_below="@id/toolbar"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="12dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="#CC000000"> <TextView
+        android:id="@+id/txtEstadoCentros"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:text="Iniciando GPS..."
+        android:textColor="@android:color/white"
+        android:textSize="13sp"/>
+    </com.google.android.material.card.MaterialCardView>
 
-    <!-- CONTENIDO DISEÑO -->
-
-</androidx.drawerlayout.widget.DrawerLayout>
+</RelativeLayout>

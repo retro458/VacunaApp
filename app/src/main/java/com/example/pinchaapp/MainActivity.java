@@ -157,6 +157,8 @@ public class MainActivity extends AppCompatActivity {
         api.loginGoogle(googleDto).enqueue(new Callback<RespuestaDto<AuthDto.AuthResponseDto>>() {
             @Override
             public void onResponse(Call<RespuestaDto<AuthDto.AuthResponseDto>> call, Response<RespuestaDto<AuthDto.AuthResponseDto>> response) {
+
+                // 1. Petición exitosa (HTTP 200) y lógica de negocio correcta
                 if (response.isSuccessful() && response.body() != null && response.body().isExito()) {
                     AuthDto.AuthResponseDto data = response.body().getData();
                     SessionManager.guardarSesion(
@@ -169,14 +171,39 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Bienvenido " + data.getNombre(), Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(MainActivity.this, pantalla_dashboard.class));
                     finish();
-                } else {
-                    Toast.makeText(MainActivity.this, "Google no registrado en servidor", Toast.LENGTH_SHORT).show();
+                    return;
                 }
+
+                // 2. Control limpio de errores basado en códigos de estado HTTP
+                String mensajeUsuario;
+                switch (response.code()) {
+                    case 401: // Unauthorized
+                        mensajeUsuario = "Sesión de Google inválida o expirada.";
+                        break;
+                    case 403: // Forbidden
+                        mensajeUsuario = "Acceso denegado. Usuario no autorizado.";
+                        break;
+                    case 404: // Not Found
+                        mensajeUsuario = "Servicio de autenticación no encontrado.";
+                        break;
+                    case 409: // Conflict (Por ejemplo, problemas controlados de BD)
+                        mensajeUsuario = "Conflicto al registrar la cuenta. Intente de nuevo.";
+                        break;
+                    case 500: // Internal Server Error
+                        mensajeUsuario = "Error interno en el servidor. Inténtelo más tarde.";
+                        break;
+                    default:
+                        mensajeUsuario = "Error inesperado (Código " + response.code() + ").";
+                        break;
+                }
+
+                Toast.makeText(MainActivity.this, mensajeUsuario, Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onFailure(Call<RespuestaDto<AuthDto.AuthResponseDto>> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                // Error de red limpio (Sin Internet, servidor apagado, etc.)
+                Toast.makeText(MainActivity.this, "No se pudo conectar con el servidor", Toast.LENGTH_SHORT).show();
             }
         });
     }
