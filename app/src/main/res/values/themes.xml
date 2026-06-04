@@ -6,4 +6,8 @@
     </style>
 
     <style name="Theme.PinchaApp" parent="Base.Theme.PinchaApp" />
+    <style name="DatePickerTheme" parent="Theme.MaterialComponents.Light.Dialog">
+        <item name="colorPrimary">@color/blue</item>
+        <item name="colorAccent">@color/skyblue</item>
+    </style>
 </resources>

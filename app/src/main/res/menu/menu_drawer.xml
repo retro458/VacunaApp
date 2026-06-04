@@ -14,12 +14,12 @@
 
     <item
         android:id="@+id/nav_escanear"
-        android:title="Escanear Carnet"
+        android:title="Registrar Carnet"
         android:icon="@android:drawable/ic_menu_camera"/>
 
     <item
         android:id="@+id/nav_carnets"
-        android:title="Carnets Escaneados"
+        android:title="Carnets Registrados"
         android:icon="@android:drawable/ic_menu_gallery"/>
 
     <item

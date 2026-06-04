@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -8,75 +7,169 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- CONTENIDO DISEÑO -->
-    <androidx.core.widget.NestedScrollView
+    <!-- ══════════════════════════════════════
+         CONTENIDO PRINCIPAL
+    ══════════════════════════════════════ -->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#F8F8F8"
-        android:fillViewport="true">
+        android:background="#F8F8F8">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:fillViewport="true">
 
-            <!-- TOOLBAR -->
-            <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/toolbar"
-                android:layout_width="0dp"
-                android:layout_height="70dp"
-                android:background="#42C4F7"
-                app:title="Carnets Escaneados"
-                app:titleTextColor="@android:color/white"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
+                <!-- TOOLBAR -->
+                <com.google.android.material.appbar.MaterialToolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="0dp"
+                    android:layout_height="70dp"
+                    android:background="#42C4F7"
+                    app:title="Carnets Registrados"
+                    app:titleTextColor="@android:color/white"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
 
-            <!-- CARD PERFIL -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardPerfil"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="4dp"
-                app:layout_constraintTop_toBottomOf="@id/toolbar"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+                <!-- CARD PERFIL (igual que tenías) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardPerfil"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="4dp"
+                    app:layout_constraintTop_toBottomOf="@id/toolbar"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
 
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/txtNombre"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Daniela Fernanda Morales Corea"
+                            android:textColor="@color/blue_dark"
+                            android:textStyle="bold"
+                            android:textSize="16sp"/>
+
+                        <TextView
+                            android:id="@+id/txtEdad"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="21 años y 4 meses"
+                            android:textColor="#B0B0B0"
+                            android:textSize="13sp"
+                            android:layout_marginTop="4dp"/>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ETIQUETA "MIS CARNETS" -->
+                <TextView
+                    android:id="@+id/txtSeccion"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="MIS CARNETS"
+                    android:textSize="11sp"
+                    android:textColor="@color/skyblue"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="8dp"
+                    app:layout_constraintTop_toBottomOf="@id/cardPerfil"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
+                <!-- ESTADO VACÍO (se muestra si no hay carnets) -->
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:id="@+id/layoutVacio"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:paddingTop="48dp"
+                    android:paddingBottom="48dp"
+                    android:paddingStart="32dp"
+                    android:paddingEnd="32dp"
+                    app:layout_constraintTop_toBottomOf="@id/txtSeccion"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    tools:visibility="visible">
+
+                    <ImageView
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
+                        android:src="@drawable/outline_cards_stack_24"
+                        android:alpha="0.3"
+                        app:tint="@color/skyblue"/>
 
                     <TextView
-                        android:id="@+id/txtNombre"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Daniela Fernanda Morales Corea"
-                        android:textColor="@color/blue_dark"
+                        android:text="Aún no tienes carnets registrados"
+                        android:textSize="15sp"
+                        android:textColor="@color/blue"
                         android:textStyle="bold"
-                        android:textSize="16sp"/>
+                        android:layout_marginTop="12dp"
+                        android:gravity="center"/>
 
                     <TextView
-                        android:id="@+id/txtEdad"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="21 años y 4 meses"
-                        android:textColor="#B0B0B0"
+                        android:text="Toca el botón + para agregar tu primer carnet"
                         android:textSize="13sp"
-                        android:layout_marginTop="4dp"/>
+                        android:textColor="#AAAAAA"
+                        android:layout_marginTop="6dp"
+                        android:gravity="center"/>
 
                 </LinearLayout>
 
-            </com.google.android.material.card.MaterialCardView>
+                <!-- LISTA DE CARNETS -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerCarnets"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="80dp"
+                    android:clipToPadding="false"
+                    android:nestedScrollingEnabled="false"
+                    app:layout_constraintTop_toBottomOf="@id/txtSeccion"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    tools:listitem="@layout/item_carnet"
+                    tools:itemCount="3"/>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.core.widget.NestedScrollView>
 
-    </androidx.core.widget.NestedScrollView>
+        <!-- FAB flotante sobre todo el contenido -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabAgregar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="20dp"
+            android:src="@drawable/outline_add_card_24"
+            android:contentDescription="Agregar carnet"
+            app:backgroundTint="@color/blue"
+            app:tint="@android:color/white"/>
 
-    <!-- MENU HAMBURGUESA -->
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <!-- MENÚ HAMBURGUESA -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationView"
         android:layout_width="wrap_content"
@@ -84,7 +177,5 @@
         android:layout_gravity="start"
         app:menu="@menu/menu_drawer"
         app:headerLayout="@layout/header_drawer"/>
-
-    <!-- CONTENIDO DISEÑO -->
 
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -44,6 +44,10 @@ dependencies {
     implementation libs.room.runtime
     annotationProcessor libs.room.compiler
 
+    // Glide
+    implementation libs.glide
+    annotationProcessor libs.glide.compiler
+
     //PieCharts
     implementation 'com.github.PhilJay:MPAndroidChart:3.1.0'
 

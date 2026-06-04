@@ -39,12 +39,18 @@ public class ImcAdapter extends RecyclerView.Adapter<ImcAdapter.ViewHolder> {
         holder.txtIMC.setText(
                 "IMC: " + String.format(Locale.getDefault(), "%.1f", imc.getResultado())
         );
-
         holder.txtCategoria.setText(imc.getClasificacion());
 
-        if (imc.getFecha() != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-            holder.txtFecha.setText(sdf.format(imc.getFecha()));
+        String fecha = imc.getFecha();
+        if (fecha != null && !fecha.isEmpty()) {
+            try {
+                String limpia = fecha.split("T")[0];
+                SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                SimpleDateFormat formateador = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                holder.txtFecha.setText(formateador.format(parser.parse(limpia)));
+            } catch (Exception e) {
+                holder.txtFecha.setText(fecha); // fallback: muestra como viene
+            }
         } else {
             holder.txtFecha.setText("Sin fecha");
         }

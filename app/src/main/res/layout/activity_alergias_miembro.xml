@@ -79,8 +79,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginTop="8dp"
-                android:backgroundTint="@color/skyblue"
-                android:textColor="@color/black"
+                android:background="@drawable/spinner_background"
                 app:layout_constraintTop_toBottomOf="@id/cardPerfil"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>

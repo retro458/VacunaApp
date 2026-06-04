@@ -80,6 +80,10 @@ public class RegistroImc extends AppCompatActivity {
     }
 
     private void guardarIMC() {
+        if (idPerfil == 0) {
+            Toast.makeText(this, "Error: perfil no válido", Toast.LENGTH_SHORT).show();
+            return;
+        }
         String pesoStr   = etPeso.getText().toString().trim();
         String alturaStr = etAltura.getText().toString().trim();
         if (pesoStr.isEmpty() || alturaStr.isEmpty()) return;

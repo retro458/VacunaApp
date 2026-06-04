@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -25,12 +24,11 @@
                 android:layout_width="0dp"
                 android:layout_height="70dp"
                 android:background="#42C4F7"
-                app:title="Escanear Carnet"
+                app:title="Registrar Carnet"
                 app:titleTextColor="@android:color/white"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
-
 
             <!-- CARD PERFIL -->
             <com.google.android.material.card.MaterialCardView
@@ -69,11 +67,322 @@
                         android:layout_marginTop="4dp"/>
 
                 </LinearLayout>
-
             </com.google.android.material.card.MaterialCardView>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            <!-- ══════════════════════════════════════
+                 CARD FOTOS
+            ══════════════════════════════════════ -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardFotos"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="4dp"
+                app:layout_constraintTop_toBottomOf="@id/cardPerfil"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Título sección -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="FOTOS DEL CARNET"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/skyblue"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="12dp"/>
+
+                    <!-- Fila de fotos -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="2"
+                        android:gravity="center">
+
+                        <!-- Foto frontal -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:layout_marginEnd="6dp">
+
+                            <FrameLayout
+                                android:id="@+id/btnFotoFrontal"
+                                android:layout_width="match_parent"
+                                android:layout_height="110dp"
+                                android:background="@drawable/bg_foto_dashed"
+                                android:clickable="true"
+                                android:focusable="true">
+
+                                <!-- Preview de imagen (oculto hasta que se elige) -->
+                                <ImageView
+                                    android:id="@+id/imgFrontal"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:scaleType="centerCrop"
+                                    android:visibility="gone"/>
+
+                                <!-- Placeholder visible antes de elegir -->
+                                <LinearLayout
+                                    android:id="@+id/placeholderFrontal"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:orientation="vertical"
+                                    android:gravity="center">
+
+                                    <ImageView
+                                        android:layout_width="32dp"
+                                        android:layout_height="32dp"
+                                        android:src="@drawable/outline_camera_24"
+                                        app:tint="@color/blue"/>
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Parte frontal"
+                                        android:textSize="11sp"
+                                        android:textColor="@color/skyblue"
+                                        android:textStyle="bold"
+                                        android:layout_marginTop="6dp"/>
+
+                                </LinearLayout>
+                            </FrameLayout>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Anverso"
+                                android:textSize="10sp"
+                                android:textColor="#AAAAAA"
+                                android:layout_marginTop="5dp"/>
+
+                        </LinearLayout>
+
+                        <!-- Foto trasera -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:layout_marginStart="6dp">
+
+                            <FrameLayout
+                                android:id="@+id/btnFotoTrasera"
+                                android:layout_width="match_parent"
+                                android:layout_height="110dp"
+                                android:background="@drawable/bg_foto_dashed"
+                                android:clickable="true"
+                                android:focusable="true">
+
+                                <ImageView
+                                    android:id="@+id/imgTrasera"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:scaleType="centerCrop"
+                                    android:visibility="gone"/>
+
+                                <LinearLayout
+                                    android:id="@+id/placeholderTrasera"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:orientation="vertical"
+                                    android:gravity="center">
+
+                                    <ImageView
+                                        android:layout_width="32dp"
+                                        android:layout_height="32dp"
+                                        android:src="@drawable/outline_camera_24"
+                                        app:tint="@color/blue"/>
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Parte trasera"
+                                        android:textSize="11sp"
+                                        android:textColor="@color/skyblue"
+                                        android:textStyle="bold"
+                                        android:layout_marginTop="6dp"/>
+
+                                </LinearLayout>
+                            </FrameLayout>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Reverso"
+                                android:textSize="10sp"
+                                android:textColor="#AAAAAA"
+                                android:layout_marginTop="5dp"/>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ══════════════════════════════════════
+                 CARD DATOS
+            ══════════════════════════════════════ -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardDatos"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="4dp"
+                app:layout_constraintTop_toBottomOf="@id/cardFotos"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="DATOS DEL CARNET"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/skyblue"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="14dp"/>
+
+                    <!-- Nombre propietario -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Nombre del propietario"
+                        android:textSize="11sp"
+                        android:textColor="#888888"
+                        android:layout_marginBottom="4dp"/>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:boxStrokeColor="@color/blue_light"
+                        app:hintTextColor="@color/skyblue">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etNombrePropietario"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Ej. Daniela Morales Corea"
+                            android:inputType="textPersonName"
+                            android:textSize="13sp"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Clínica -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Clínica / Hospital"
+                        android:textSize="11sp"
+                        android:textColor="#888888"
+                        android:layout_marginBottom="4dp"/>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:boxStrokeColor="@color/blue_light"
+                        app:hintTextColor="@color/skyblue">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etClinica"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Ej. Hospital Nacional Rosales"
+                            android:inputType="textCapWords"
+                            android:textSize="13sp"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Fecha de registro -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Fecha de registro"
+                        android:textSize="11sp"
+                        android:textColor="#888888"
+                        android:layout_marginBottom="4dp"/>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:boxStrokeColor="@color/blue_light"
+                        app:hintTextColor="@color/skyblue"
+                        app:endIconMode="custom"
+                        app:endIconDrawable="@drawable/outline_calendar_month_24"
+                        app:endIconTint="@color/skyblue">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etFecha"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="DD/MM/AAAA"
+                            android:inputType="none"
+                            android:focusable="false"
+                            android:textSize="13sp"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- BOTÓN GUARDAR -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGuardar"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="24dp"
+                android:text="Guardar carnet"
+                android:textSize="15sp"
+                android:textColor="@android:color/white"
+                app:backgroundTint="@color/blue"
+                app:cornerRadius="14dp"
+                app:layout_constraintTop_toBottomOf="@id/cardDatos"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 
     <!-- MENU HAMBURGUESA -->
@@ -84,7 +393,5 @@
         android:layout_gravity="start"
         app:menu="@menu/menu_drawer"
         app:headerLayout="@layout/header_drawer"/>
-
-    <!-- CONTENIDO DISEÑO -->
 
 </androidx.drawerlayout.widget.DrawerLayout>

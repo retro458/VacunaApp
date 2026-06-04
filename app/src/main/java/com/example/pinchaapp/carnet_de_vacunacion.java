@@ -54,18 +54,10 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 
-public class carnet_de_vacunacion extends AppCompatActivity {
+public class carnet_de_vacunacion extends BasePerfilActivity {
 
     private static final String API_PDF_URL = "https://api.nodesv.com/api/Certificado/descargar-pdf/";
 
-    DrawerLayout drawerLayout;
-    NavigationView navigationView;
-    MaterialToolbar toolbar;
-
-    String nombrePerfil, fechaNacimiento, sexo, tipoPerfil;
-    int idPerfil;
-
-    TextView txtNombreMenu, txtEdadMenu;
     RecyclerView rvVacunas, rvIMC;
     VacunaAdapter adapter;
     ImcAdapter imcAdapter;
@@ -75,107 +67,40 @@ public class carnet_de_vacunacion extends AppCompatActivity {
 
     private ApiService api;
 
+    // ── Launchers como campos de la clase ──────────────────────────
+    private final ActivityResultLauncher<Intent> launcherVacuna =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == RESULT_OK) cargarVacunasApi();
+                    });
+
+    private final ActivityResultLauncher<Intent> launcherIMC =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == RESULT_OK) cargarIMCApi();
+                    });
+
+
+    // ── Obligatorios de la base ──────────────────────────────────────
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_carnet_de_vacunacion);
+    protected int getLayoutId()      { return R.layout.activity_carnet_de_vacunacion; }
+
+    @Override
+    protected int getNavItemActivo() { return R.id.nav_carnet; }
+
+    @Override
+    protected void onPerfilReady() {
 
         api = ApiClient.getInstance().create(ApiService.class);
 
-        drawerLayout   = findViewById(R.id.drawerLayout);
-        navigationView = findViewById(R.id.navigationView);
-        toolbar        = findViewById(R.id.toolbar);
         rvVacunas      = findViewById(R.id.rvVacunasComplementarias);
         rvIMC          = findViewById(R.id.rvIMCRegistros);
-
         rvIMC.setLayoutManager(new LinearLayoutManager(this));
         rvIMC.setNestedScrollingEnabled(false);
-        TextView txtNombre = findViewById(R.id.txtNombre);
-        TextView txtEdad   = findViewById(R.id.txtEdad);
-
-        View header = navigationView.getHeaderView(0);
-        txtNombreMenu = header.findViewById(R.id.txtNombreMenu);
-        txtEdadMenu   = header.findViewById(R.id.txtEdadMenu);
-
-        idPerfil        = getIntent().getIntExtra("idPerfil", 0);
-        nombrePerfil    = getIntent().getStringExtra("nombre");
-        fechaNacimiento = getIntent().getStringExtra("fechaNacimiento");
-        sexo            = getIntent().getStringExtra("sexo");
-        tipoPerfil      = getIntent().getStringExtra("tipoPerfil");
-
-        txtNombre.setText(nombrePerfil != null ? nombrePerfil : "Sin nombre");
-        txtEdad.setText(fechaNacimiento != null ? calcularEdadCompleta(fechaNacimiento) : "Edad no disponible");
-        txtNombreMenu.setText(nombrePerfil != null ? nombrePerfil : "Sin nombre");
-        txtEdadMenu.setText(fechaNacimiento != null ? calcularEdadCompleta(fechaNacimiento) : "Edad no disponible");
-
-        int color = ContextCompat.getColor(this, R.color.skyblue);
-        toolbar.setBackgroundColor(color);
-        txtNombre.setTextColor(color);
-
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open, R.string.close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        if ("Mascota".equalsIgnoreCase(tipoPerfil)) {
-            Menu menu = navigationView.getMenu();
-            menu.findItem(R.id.nav_centros).setVisible(false);
-            menu.findItem(R.id.nav_campanias).setVisible(false);
-            findViewById(R.id.btnIMC).setVisibility(View.GONE);
-            findViewById(R.id.txtIMC).setVisibility(View.GONE);
-            findViewById(R.id.layoutEsquemaIMC).setVisibility(View.GONE);
-        }
-
-        navigationView.setNavigationItemSelectedListener(item -> {
-            int id = item.getItemId();
-            Intent intent = null;
-
-            if (id == R.id.nav_pdf) {
-                intent = new Intent(this, ExportarPDF.class);
-                intent.putExtra("idPerfil",        idPerfil);
-                intent.putExtra("nombre",          nombrePerfil);
-                intent.putExtra("fechaNacimiento", fechaNacimiento);
-                intent.putExtra("sexo",            sexo);
-                intent.putExtra("tipoPerfil",      tipoPerfil);
-            } else if (id == R.id.nav_proximas_dosis) {
-                intent = new Intent(this, ProximasDosisActivity.class);
-                intent.putExtra("idPerfil", idPerfil);
-                intent.putExtra("nombre",   nombrePerfil);
-            } else if (id == R.id.nav_alergias) {
-                intent = new Intent(this, AlergiasMiembro.class);
-                intent.putExtra("idPerfil",        idPerfil);
-                intent.putExtra("nombre",          nombrePerfil);
-                intent.putExtra("fechaNacimiento", fechaNacimiento);
-                intent.putExtra("sexo",            sexo);
-                intent.putExtra("tipoPerfil",      tipoPerfil);
-            } else if (id == R.id.nav_centros) {
-                intent = new Intent(this, CentrosDeVacunacion.class);
-                intent.putExtra("idPerfil",        idPerfil);
-                intent.putExtra("nombre",          nombrePerfil);
-                intent.putExtra("fechaNacimiento", fechaNacimiento);
-                intent.putExtra("sexo",            sexo);
-            } else if (id == R.id.nav_campanias) {
-                intent = new Intent(this, Campanias.class);
-                intent.putExtra("idPerfil",        idPerfil);
-                intent.putExtra("nombre",          nombrePerfil);
-                intent.putExtra("fechaNacimiento", fechaNacimiento);
-                intent.putExtra("sexo",            sexo);
-            } else if (id == R.id.nav_perfiles) {
-                startActivity(new Intent(this, pantalla_dashboard.class));
-                finish();
-                drawerLayout.closeDrawers();
-                return true;
-            }
-
-            if (intent != null) startActivity(intent);
-            drawerLayout.closeDrawers();
-            return true;
-        });
-
         rvVacunas.setLayoutManager(new LinearLayoutManager(this));
         rvVacunas.setNestedScrollingEnabled(false);
-        rvIMC.setLayoutManager(new LinearLayoutManager(this));
-        rvIMC.setNestedScrollingEnabled(false);
 
         findViewById(R.id.btnVacuna).setOnClickListener(v -> {
             Intent intent = new Intent(this, AgendarVacuna.class);
@@ -383,34 +308,5 @@ public class carnet_de_vacunacion extends AppCompatActivity {
         if (requestCode == 200 && resultCode == RESULT_OK) cargarIMCApi();
     }
 
-    private String calcularEdadCompleta(String fecha) {
-        try {
-            SimpleDateFormat sdf = fecha.contains("/")
-                    ? new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                    : new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            Date fechaNac = sdf.parse(fecha);
-            Calendar nac = Calendar.getInstance(); nac.setTime(fechaNac);
-            Calendar hoy = Calendar.getInstance();
-            int años = hoy.get(Calendar.YEAR) - nac.get(Calendar.YEAR);
-            int meses = hoy.get(Calendar.MONTH) - nac.get(Calendar.MONTH);
-            if (meses < 0) { años--; meses += 12; }
-            return años + " años y " + meses + " meses";
-        } catch (Exception e) {
-            return "Edad no disponible";
-        }
-    }
 
-    private String formatearFechaIso(String fechaIso) {
-        if (fechaIso == null || fechaIso.trim().isEmpty()) return "No registrada";
-        try {
-            String limpia = fechaIso.split("\\.")[0].replace("Z", "");
-            SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
-            Date fecha = parser.parse(limpia);
-            SimpleDateFormat formateador = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-            return formateador.format(fecha);
-        } catch (Exception e) {
-            Log.e("FECHA_PARSER", "Error al parsear fecha: " + fechaIso, e);
-            return fechaIso;
-        }
-    }
 }

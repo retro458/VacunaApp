@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Fondo -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/skyblue" />
+            <corners android:radius="8dp" />
+            <padding
+                android:left="12dp"
+                android:right="40dp"
+                android:top="4dp"
+                android:bottom="4dp" />
+        </shape>
+    </item>
+
+    <!-- Flecha -->
+    <item
+        android:drawable="@drawable/outline_arrow_drop_down_circle_24"
+        android:gravity="end|center_vertical"
+        android:right="0dp"/>
+
+</layer-list>

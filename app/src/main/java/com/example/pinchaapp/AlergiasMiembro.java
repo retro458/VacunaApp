@@ -1,10 +1,12 @@
 package com.example.pinchaapp;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -247,11 +249,20 @@ public class AlergiasMiembro extends BasePerfilActivity {
                                 nombres.add(a.getNombre());
                             }
 
-                            ArrayAdapter<String> adapterSpinner = new ArrayAdapter<>(
+                            ArrayAdapter<String> adapterSpinner = new ArrayAdapter<String>(
                                     AlergiasMiembro.this,
-                                    android.R.layout.simple_spinner_item, nombres);
-                            adapterSpinner.setDropDownViewResource(
-                                    android.R.layout.simple_spinner_dropdown_item);
+                                    android.R.layout.simple_spinner_item,
+                                    nombres) {
+                                @Override
+                                public View getView(int position, View convertView, ViewGroup parent) {
+                                    View view = super.getView(position, convertView, parent);
+                                    TextView tv = view.findViewById(android.R.id.text1);
+                                    tv.setTextColor(Color.WHITE);
+                                    tv.setTextSize(14f);
+                                    return view;
+                                }
+                            };
+                            adapterSpinner.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                             spinnerAlergias.setAdapter(adapterSpinner);
                         }
                     }

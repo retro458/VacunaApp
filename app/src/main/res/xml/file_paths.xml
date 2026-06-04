@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <files-path name="documentos" path="pdfs/" />
+
+    <cache-path
+        name="carnet_photos"
+        path="." />
+
+    <external-cache-path
+        name="carnet_photos_ext"
+        path="." />
+
+    <files-path
+        name="documentos"
+        path="pdfs/" />
+
 </paths>

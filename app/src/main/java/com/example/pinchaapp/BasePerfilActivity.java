@@ -274,4 +274,15 @@ public abstract class BasePerfilActivity extends AppCompatActivity {
             return hoy.get(Calendar.YEAR) - nac.get(Calendar.YEAR);
         } catch (Exception e) { return 0; }
     }
+    protected String formatearFechaIso(String fecha) {
+        try {
+            if (fecha == null || fecha.isEmpty()) return "";
+            String pattern = fecha.contains("T") ? "yyyy-MM-dd'T'HH:mm:ss" : "yyyy-MM-dd";
+            SimpleDateFormat parser = new SimpleDateFormat(pattern, Locale.getDefault());
+            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            return formatter.format(parser.parse(fecha));
+        } catch (Exception e) {
+            return fecha;
+        }
+    }
 }

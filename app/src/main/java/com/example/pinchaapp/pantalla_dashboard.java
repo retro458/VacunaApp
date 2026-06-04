@@ -33,8 +33,11 @@ import com.example.pinchaapp.session.SessionManager;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -165,59 +168,45 @@ public class pantalla_dashboard extends AppCompatActivity {
                 View view = LayoutInflater.from(pantalla_dashboard.this).inflate(R.layout.dialog_editar_perfil, null);
                 EditText etNombre = view.findViewById(R.id.etNombre);
                 EditText etFecha = view.findViewById(R.id.etFecha);
-                Spinner spTipo = view.findViewById(R.id.spTipo);
+                EditText etTipo = view.findViewById(R.id.etTipo);
                 CheckBox cbEmbarazada = view.findViewById(R.id.cbEmbarazada);
 
                 boolean isPersona = "persona".equalsIgnoreCase(perfil.getTipo());
                 etNombre.setText(perfil.getNombre());
-                etFecha.setText(perfil.getFechaNacimiento());
+                try {
+                    SimpleDateFormat entrada =
+                            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
 
-                if (isPersona) {
-                    String[] opciones = {"Masculino", "Femenino"};
-                    spTipo.setAdapter(new ArrayAdapter<>(pantalla_dashboard.this, android.R.layout.simple_spinner_dropdown_item, opciones));
-                    if ("Femenino".equalsIgnoreCase(perfil.getGenero())) {
-                        spTipo.setSelection(1);
-                        cbEmbarazada.setVisibility(View.VISIBLE);
-                        cbEmbarazada.setEnabled(true);
-                    } else {
-                        spTipo.setSelection(0);
-                        cbEmbarazada.setVisibility(View.GONE);
-                    }
+                    SimpleDateFormat salida =
+                            new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
-                    spTipo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                        @Override
-                        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                            if (pos == 0) { // Masculino
-                                cbEmbarazada.setChecked(false);
-                                cbEmbarazada.setEnabled(false);
-                                cbEmbarazada.setVisibility(View.GONE);
-                            } else {
-                                cbEmbarazada.setEnabled(true);
-                                cbEmbarazada.setVisibility(View.VISIBLE);
-                            }
-                        }
+                    Date fecha = entrada.parse(perfil.getFechaNacimiento());
 
-                        @Override
-                        public void onNothingSelected(AdapterView<?> parent) {
-                        }
-                    });
-                } else {
-                    String[] opciones = {"Perro", "Gato"};
-                    spTipo.setAdapter(new ArrayAdapter<>(pantalla_dashboard.this, android.R.layout.simple_spinner_dropdown_item, opciones));
-                    cbEmbarazada.setVisibility(View.GONE);
-                    if ("Gato".equalsIgnoreCase(perfil.getEspecie())) {
-                        spTipo.setSelection(1);
-                    } else {
-                        spTipo.setSelection(0);
-                    }
+                    etFecha.setText(salida.format(fecha));
+
+                } catch (Exception e) {
+                    etFecha.setText(perfil.getFechaNacimiento());
                 }
 
-                etFecha.setOnClickListener(v -> {
-                    Calendar calendar = Calendar.getInstance();
-                    new DatePickerDialog(pantalla_dashboard.this, (view1, year, month, dayOfMonth) -> {
-                        etFecha.setText(dayOfMonth + "/" + (month + 1) + "/" + year);
-                    }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
-                });
+                if (isPersona) {
+                    etTipo.setText(perfil.getGenero());
+                    etTipo.setEnabled(false);
+
+                    if (isPersona &&
+                            "Femenino".equalsIgnoreCase(perfil.getGenero())) {
+
+                        cbEmbarazada.setVisibility(View.VISIBLE);
+                        cbEmbarazada.setEnabled(true);
+
+                    } else {
+
+                        cbEmbarazada.setVisibility(View.GONE);
+                    }
+                } else {
+                    etTipo.setText(perfil.getEspecie());
+                    etTipo.setEnabled(false);
+                }
+
 
                 AlertDialog dialog = new AlertDialog.Builder(pantalla_dashboard.this)
                         .setTitle("Editar perfil")
@@ -229,12 +218,16 @@ public class pantalla_dashboard extends AppCompatActivity {
                 dialog.setOnShowListener(d -> {
                     Button btn = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
                     btn.setOnClickListener(v -> {
-                        String nuevoNombre = etNombre.getText().toString().trim();
-                        String nuevaFechaStr = etFecha.getText().toString().trim();
-                        String seleccionSpinner = spTipo.getSelectedItem().toString();
 
-                        if (nuevoNombre.isEmpty() || nuevaFechaStr.isEmpty()) {
-                            Toast.makeText(pantalla_dashboard.this, "Por favor llena todos los campos", Toast.LENGTH_SHORT).show();
+                        String nuevoNombre = etNombre.getText().toString().trim();
+                        String nuevaFechaStr = perfil.getFechaNacimiento();
+
+                        if (nuevoNombre.isEmpty()) {
+                            Toast.makeText(
+                                    pantalla_dashboard.this,
+                                    "Ingresa un nombre",
+                                    Toast.LENGTH_SHORT
+                            ).show();
                             return;
                         }
 
@@ -244,23 +237,18 @@ public class pantalla_dashboard extends AppCompatActivity {
                         updateDto.setFotoUrl(perfil.getFotoUrl());
 
                         try {
-                            java.text.SimpleDateFormat formatoInput = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
-                            java.text.SimpleDateFormat formatoISO = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
-
-                            java.util.Date fechaParseada = formatoInput.parse(nuevaFechaStr);
-                            String fechaFormatoAPI = formatoISO.format(fechaParseada);
-
-                            updateDto.setFechaNacimiento(fechaFormatoAPI);
+                            updateDto.setFechaNacimiento(
+                                    perfil.getFechaNacimiento());
                         } catch (Exception e) {
                             Toast.makeText(pantalla_dashboard.this, "Formato de fecha inválido", Toast.LENGTH_SHORT).show();
                             return;
                         }
 
                         if (isPersona) {
-                            updateDto.setGenero(seleccionSpinner);
+                            updateDto.setGenero(perfil.getGenero());
                             updateDto.setEspecie(null);
                         } else {
-                            updateDto.setEspecie(seleccionSpinner);
+                            updateDto.setEspecie(perfil.getEspecie());
                             updateDto.setGenero(null);
                         }
 
