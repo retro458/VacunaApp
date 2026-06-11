@@ -40,16 +40,26 @@ public class CampaniaAdapter extends RecyclerView.Adapter<CampaniaAdapter.Campan
     public void onBindViewHolder(@NonNull CampaniaViewHolder holder, int position) {
         CampaniaDto campania = campanias.get(position);
 
+        // 1. El nombre se mantiene igual
         holder.txtNombre.setText(campania.getNombre());
-        holder.txtVacuna.setText(campania.getVacuna() != null
-                ? "Vacuna: " + campania.getVacuna() : "Vacuna no especificada");
-        holder.txtCentro.setText(campania.getNombreCentro() != null
-                ? campania.getNombreCentro() : "Centro no especificado");
-        holder.txtFechas.setText(
-                (campania.getFechaInicio() != null ? campania.getFechaInicio() : "?")
-                        + " - "
-                        + (campania.getFechaFin() != null ? campania.getFechaFin() : "?"));
 
+        // 2. La API de C# devuelve IdVacuna (no el nombre directamente).
+        // Por ahora ponemos un texto genérico
+        holder.txtVacuna.setText("Vacuna programada");
+
+        // 3. El centro ahora viene en la propiedad "lugar"
+        holder.txtCentro.setText(campania.getLugar() != null
+                ? campania.getLugar() : "Lugar no especificado");
+
+        // 4. La fecha ahora es un solo campo que viene en formato ISO (ej: "2026-10-15T00:00:00")
+        String fechaLimpia = "Fecha no definida";
+        if (campania.getFecha() != null && !campania.getFecha().isEmpty()) {
+            // Cortamos la letra 'T' para mostrar solo "YYYY-MM-DD"
+            fechaLimpia = campania.getFecha().split("T")[0];
+        }
+        holder.txtFechas.setText("Fecha: " + fechaLimpia);
+
+        // Evento clic para abrir el mapa
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onCampaniaClick(campania);
         });

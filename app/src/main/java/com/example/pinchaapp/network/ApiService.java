@@ -126,10 +126,10 @@ public interface ApiService {
     Call<RespuestaDto<List<CentroDto>>> getCentrosPorCampania(@Path("idCampania") int idCampania);
 
     // ==================== CAMPAÑAS ====================
-    @GET("api/campanias")
+    @GET("api/campania")
     Call<RespuestaDto<List<CampaniaDto>>> getCampanias();
 
-    @GET("api/campanias/{id}")
+    @GET("api/campania/{id}")
     Call<RespuestaDto<CampaniaDto>> getCampania(@Path("id") int id);
 
     // ==================== IMC / CARNET ====================

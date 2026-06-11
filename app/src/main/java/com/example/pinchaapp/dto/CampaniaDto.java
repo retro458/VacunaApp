@@ -1,41 +1,64 @@
 package com.example.pinchaapp.dto;
 
+import com.google.gson.annotations.SerializedName;
+
 public class CampaniaDto {
 
-    private int    idCampania;
+    @SerializedName("id")
+    private int id;
+
+    @SerializedName("nombre")
     private String nombre;
-    private String descripcion;
-    private String fechaInicio;   // "yyyy-MM-dd"
-    private String fechaFin;      // "yyyy-MM-dd"
-    private String estado;
-    private int    idCentro;
-    private String nombreCentro;
-    private String vacuna;
 
-    public int    getIdCampania()                   { return idCampania; }
-    public void   setIdCampania(int idCampania)     { this.idCampania = idCampania; }
+    @SerializedName("lugar")
+    private String lugar;
 
-    public String getNombre()                       { return nombre; }
-    public void   setNombre(String nombre)          { this.nombre = nombre; }
+    @SerializedName("fecha")
+    private String fecha; // Formato ISO "yyyy-MM-dd'T'HH:mm:ss"
 
-    public String getDescripcion()                      { return descripcion; }
-    public void   setDescripcion(String descripcion)    { this.descripcion = descripcion; }
+    @SerializedName("latitud")
+    private Double latitud;
 
-    public String getFechaInicio()                      { return fechaInicio; }
-    public void   setFechaInicio(String fechaInicio)    { this.fechaInicio = fechaInicio; }
+    @SerializedName("longitud")
+    private Double longitud;
 
-    public String getFechaFin()                   { return fechaFin; }
-    public void   setFechaFin(String fechaFin)    { this.fechaFin = fechaFin; }
+    @SerializedName("idVacuna")
+    private Integer idVacuna;
 
-    public String getEstado()                   { return estado; }
-    public void   setEstado(String estado)      { this.estado = estado; }
+    @SerializedName("idCentro")
+    private Integer idCentro;
 
-    public int    getIdCentro()                 { return idCentro; }
-    public void   setIdCentro(int idCentro)     { this.idCentro = idCentro; }
+    @SerializedName("activo")
+    private Boolean activo;
 
-    public String getNombreCentro()                       { return nombreCentro; }
-    public void   setNombreCentro(String nombreCentro)    { this.nombreCentro = nombreCentro; }
+    // =========================
+    // GETTERS Y SETTERS
+    // =========================
 
-    public String getVacuna()                   { return vacuna; }
-    public void   setVacuna(String vacuna)      { this.vacuna = vacuna; }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+
+    public String getLugar() { return lugar; }
+    public void setLugar(String lugar) { this.lugar = lugar; }
+
+    public String getFecha() { return fecha; }
+    public void setFecha(String fecha) { this.fecha = fecha; }
+
+    public Double getLatitud() { return latitud; }
+    public void setLatitud(Double latitud) { this.latitud = latitud; }
+
+    public Double getLongitud() { return longitud; }
+    public void setLongitud(Double longitud) { this.longitud = longitud; }
+
+    public Integer getIdVacuna() { return idVacuna; }
+    public void setIdVacuna(Integer idVacuna) { this.idVacuna = idVacuna; }
+
+    public Integer getIdCentro() { return idCentro; }
+    public void setIdCentro(Integer idCentro) { this.idCentro = idCentro; }
+
+    public Boolean getActivo() { return activo; }
+    public void setActivo(Boolean activo) { this.activo = activo; }
 }
